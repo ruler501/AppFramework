@@ -92,18 +92,24 @@ SpriteView::SpriteView(EventController* controller)
         TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48);
     }
 
+SpriteView::~SpriteView(){
+    for(auto &a : myEvents) delete a;
+}
+
 bool SpriteView::activate(){
-    KeyEventProcessor* ourKeyProc = new KeyEventProcessor(myController, text, composition, done);
-    FMotionEventProcessor* ourFMotProc = new FMotionEventProcessor(myController, x, y, w, h);
-    InputEventProcessor* ourInProc = new InputEventProcessor(myController, text, composition);
-    EditEventProcessor* ourEdProc = new EditEventProcessor(myController, composition);
-    MGestureEventProcessor* ourMGesProc = new MGestureEventProcessor(myController, angle);
+    myEvents.push_back(new KeyEventProcessor(myController, text, composition, done));
+    myEvents.push_back(new FMotionEventProcessor(myController, x, y, w, h));
+    myEvents.push_back(new InputEventProcessor(myController, text, composition));
+    myEvents.push_back(new EditEventProcessor(myController, composition));
+    myEvents.push_back(new MGestureEventProcessor(myController, angle));
+    SDL_JoystickEventState(SDL_IGNORE);
     return true;
 }
 
 bool SpriteView::updateWorld(){
-    vel[0] += h*SDL_JoystickGetAxis(accelerometer, 0);
-    vel[1] += h*SDL_JoystickGetAxis(accelerometer, 1);
+    SDL_JoystickUpdate();
+    vel[0] += SDL_JoystickGetAxis(accelerometer, 0)>>10;
+    vel[1] += SDL_JoystickGetAxis(accelerometer, 1)>>10;
     x += vel[0];
     y += vel[1];
     if (x + sprite.w > w || x < 0) vel[0] = -vel[0]/2;
@@ -161,16 +167,17 @@ int main(int argc, char *argv[])
 	SpriteView* tempView = new SpriteView(&ourController);
 	views.push_back(tempView);
 	//if (font == NULL) done = true;
+	int millis = SDL_GetTicks();
 	while(!views.empty()){
         View* current = views[0];
         current->activate();
-        while(true){
+        while(current->updateWorld()){
+            millis = SDL_GetTicks();
             current->drawWorld();
             while(SDL_PollEvent(&event)){
                 ourController.process(event);
             }
-            //current->updateWorld();
-            SDL_Delay(15);
+            SDL_Delay(17-millis+SDL_GetTicks());
         }
         current->deactivate();
         views.pop_front();

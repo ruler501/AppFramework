@@ -120,6 +120,7 @@ protected:
 
 public:
 	SpriteView(EventController* controller);
+	~SpriteView();
 
     virtual bool activate();
     virtual bool updateWorld();
