@@ -93,17 +93,11 @@ SpriteView::SpriteView(EventController* controller)
     }
 
 bool SpriteView::activate(){
-   /* KeyEventProcessor* ourKeyProc = new KeyEventProcessor(myController, text, composition, done);
+    KeyEventProcessor* ourKeyProc = new KeyEventProcessor(myController, text, composition, done);
     FMotionEventProcessor* ourFMotProc = new FMotionEventProcessor(myController, x, y, w, h);
     InputEventProcessor* ourInProc = new InputEventProcessor(myController, text, composition);
     EditEventProcessor* ourEdProc = new EditEventProcessor(myController, composition);
     MGestureEventProcessor* ourMGesProc = new MGestureEventProcessor(myController, angle);
-    */
-    myEvents.push_back(new KeyEventProcessor(myController, text, composition, done));
-    myEvents.push_back(new FMotionEventProcessor(myController, x, y, w, h));
-    myEvents.push_back(new InputEventProcessor(myController, text, composition));
-    myEvents.push_back(new EditEventProcessor(myController, composition));
-    myEvents.push_back(new MGestureEventProcessor(myController, angle));
     return true;
 }
 
@@ -123,9 +117,9 @@ bool SpriteView::drawWorld(){
     SDL_RenderClear(renderer);
 
     SDL_Color color = { 255, 255, 255, 255 };
-    //if(font){
+    /*if(font){
         SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), color);
-        /*if(surf){
+        if(surf){
             SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
             SDL_FreeSurface(surf);
             if(texture){
@@ -150,7 +144,6 @@ bool SpriteView::deactivate(){
     TTF_CloseFont(font);
 	SDL_DestroyTexture(sprite.texture);
 	sprite.texture = NULL;
-	for(auto& a : myEvents) delete a;
 }
 
 using namespace std;
@@ -171,11 +164,12 @@ int main(int argc, char *argv[])
 	while(!views.empty()){
         View* current = views[0];
         current->activate();
-        while(current->updateWorld()){
+        while(true){
             current->drawWorld();
             while(SDL_PollEvent(&event)){
                 ourController.process(event);
             }
+            //current->updateWorld();
             SDL_Delay(15);
         }
         current->deactivate();
