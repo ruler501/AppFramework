@@ -1,6 +1,7 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
+#include "SDL_mixer.h"
 
 #include "EventController.h"
 #include "EventProcessor.h"
@@ -112,11 +113,12 @@ protected:
 	EventController* myController;
 	bool done;
 	Sprite sprite;
-	int x, y, w, h;
-	float angle, vel[2];
+	int x, y, w, h, vel[2];
+	float angle;
 	TTF_Font *font;
 	SDL_Joystick *accelerometer;
 	std::string text, composition;
+	Mix_Music *music;
 
 public:
 	SpriteView(EventController* controller);

@@ -86,10 +86,10 @@ bool KeyEventProcessor::process(SDL_Event &event){
 
 SpriteView::SpriteView(EventController* controller)
 	: myController(controller), sprite(LoadSprite("image.bmp", renderer)), x(0), y(0), angle(0),
-	vel{}, accelerometer(SDL_JoystickOpen(0)), done(false)
+	vel({0,0}), accelerometer(SDL_JoystickOpen(0)), done(false), font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
+	music(Mix_LoadMUS("music.ogg"))
 	{
 	    SDL_GetWindowSize(window, &w, &h);
-        TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48);
     }
 
 SpriteView::~SpriteView(){
@@ -102,14 +102,15 @@ bool SpriteView::activate(){
     myEvents.push_back(new InputEventProcessor(myController, text, composition));
     myEvents.push_back(new EditEventProcessor(myController, composition));
     myEvents.push_back(new MGestureEventProcessor(myController, angle));
-    SDL_JoystickEventState(SDL_IGNORE);
+    myEvents.push_back(new QuitEventProcessor(myController, done));
+    SDL_JoystickEventState(SDL_QUERY);
     return true;
 }
 
 bool SpriteView::updateWorld(){
     SDL_JoystickUpdate();
-    vel[0] += SDL_JoystickGetAxis(accelerometer, 0)>>10;
-    vel[1] += SDL_JoystickGetAxis(accelerometer, 1)>>10;
+    vel[0] += SDL_JoystickGetAxis(accelerometer, 0);
+    vel[1] += SDL_JoystickGetAxis(accelerometer, 1);
     x += vel[0];
     y += vel[1];
     if (x + sprite.w > w || x < 0) vel[0] = -vel[0]/2;
@@ -123,7 +124,7 @@ bool SpriteView::drawWorld(){
     SDL_RenderClear(renderer);
 
     SDL_Color color = { 255, 255, 255, 255 };
-    /*if(font){
+    if(font){
         SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), color);
         if(surf){
             SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
@@ -137,12 +138,15 @@ bool SpriteView::drawWorld(){
                 texture = NULL;
             }
         }
-    }*/
+    }
 
     draw(sprite, x, y, angle);
 
     /*Update the screen!*/
     SDL_RenderPresent(renderer);
+
+    if (x>w/2) Mix_PlayMusic(music,0);
+
     return !done;
 }
 
@@ -161,6 +165,16 @@ int main(int argc, char *argv[])
 
 	TTF_Init();
 
+	int audio_rate = 22050;
+    Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
+    int audio_channels = 2;
+    int audio_buffers = 4096;
+
+	if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
+        printf("Unable to open audio!\n");
+        exit(1);
+    }
+
     /* Main render loop */
     SDL_Event event;
     EventController ourController;
@@ -171,12 +185,14 @@ int main(int argc, char *argv[])
 	while(!views.empty()){
         View* current = views[0];
         current->activate();
-        while(current->updateWorld()){
+        bool cont = true;
+        while(cont){
             millis = SDL_GetTicks();
-            current->drawWorld();
             while(SDL_PollEvent(&event)){
                 ourController.process(event);
             }
+            cont &= current->updateWorld();
+            cont &= current->drawWorld();
             SDL_Delay(17-millis+SDL_GetTicks());
         }
         current->deactivate();
