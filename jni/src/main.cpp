@@ -73,7 +73,6 @@ bool KeyEventProcessor::process(SDL_Event &event){
     switch(event.key.keysym.sym){
     case SDLK_AC_BACK:
         myView->done = true;
-        myView->x = 0;
         break;
     case SDLK_BACKSPACE:
         if(myView->composition.length()) myView->composition.erase(myView->composition.end());
