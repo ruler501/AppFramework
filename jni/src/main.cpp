@@ -98,6 +98,10 @@ SpriteView::SpriteView(EventController* controller)
 
 SpriteView::~SpriteView(){
     for(auto &a : myEvents) delete a;
+    TTF_CloseFont(font);
+	SDL_DestroyTexture(sprite.texture);
+	sprite.texture = NULL;
+	done = true;
 }
 
 bool SpriteView::activate(){
@@ -109,7 +113,6 @@ bool SpriteView::activate(){
     myEvents.push_back(new QuitEventProcessor(myController, this));
     myEvents.push_back(new FDownEventProcesor(myController, this));
     SDL_JoystickEventState(SDL_QUERY);
-    Mix_PlayMusic(music,0);
     return true;
 }
 
@@ -157,10 +160,7 @@ bool SpriteView::drawWorld(){
 }
 
 bool SpriteView::deactivate(){
-    TTF_CloseFont(font);
-	SDL_DestroyTexture(sprite.texture);
-	sprite.texture = NULL;
-	done = true;
+    for(auto& a : myEvents) a->deactivate();
 }
 
 using namespace std;
