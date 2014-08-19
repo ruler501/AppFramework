@@ -5,5 +5,5 @@
 
 APP_ABI := armeabi armeabi-v7a
 APP_STL := gnustl_static
-APP_PLATFORM := android-10
+APP_PLATFORM := android-12
 APP_CPPFLAGS += -std=c++11 -fexceptions -fpermissive

@@ -72,23 +72,27 @@ void draw(const Sprite sprite, int x, int y, int angle)
 bool KeyEventProcessor::process(SDL_Event &event){
     switch(event.key.keysym.sym){
     case SDLK_AC_BACK:
-        *done = true;
+        myView->done = true;
+        myView->x = 0;
         break;
     case SDLK_BACKSPACE:
-        if(composition->length()) composition->erase(composition->end());
-        else if(text->length()) text->erase(text->end());
+        if(myView->composition.length()) myView->composition.erase(myView->composition.end());
+        else if(myView->text.length()) myView->text.erase(myView->text.end());
         break;
     case SDLK_RETURN:
-        *text += '\n';
+        myView->text += '\n';
         break;
     }
 }
 
 SpriteView::SpriteView(EventController* controller)
 	: myController(controller), sprite(LoadSprite("image.bmp", renderer)), x(0), y(0), angle(0),
-	vel({0,0}), accelerometer(SDL_JoystickOpen(0)), done(false), font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
+	vel({0,0}), done(false), font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
 	music(Mix_LoadMUS("music.ogg"))
 	{
+
+	    accelerometer = SDL_JoystickOpen(0);
+	    if (accelerometer == NULL) done = true;
 	    SDL_GetWindowSize(window, &w, &h);
     }
 
@@ -97,30 +101,34 @@ SpriteView::~SpriteView(){
 }
 
 bool SpriteView::activate(){
-    myEvents.push_back(new KeyEventProcessor(myController, text, composition, done));
-    myEvents.push_back(new FMotionEventProcessor(myController, x, y, w, h));
-    myEvents.push_back(new InputEventProcessor(myController, text, composition));
-    myEvents.push_back(new EditEventProcessor(myController, composition));
-    myEvents.push_back(new MGestureEventProcessor(myController, angle));
-    myEvents.push_back(new QuitEventProcessor(myController, done));
+    myEvents.push_back(new KeyEventProcessor(myController, this));
+    myEvents.push_back(new FMotionEventProcessor(myController, this));
+    myEvents.push_back(new InputEventProcessor(myController, this));
+    myEvents.push_back(new EditEventProcessor(myController, this));
+    myEvents.push_back(new MGestureEventProcessor(myController, this));
+    myEvents.push_back(new QuitEventProcessor(myController, this));
+    myEvents.push_back(new FDownEventProcesor(myController, this));
     SDL_JoystickEventState(SDL_QUERY);
+    Mix_PlayMusic(music,0);
     return true;
 }
 
 bool SpriteView::updateWorld(){
     SDL_JoystickUpdate();
-    vel[0] += SDL_JoystickGetAxis(accelerometer, 0);
-    vel[1] += SDL_JoystickGetAxis(accelerometer, 1);
+    vel[0] = 90*(float)SDL_JoystickGetAxis(accelerometer, 0)/65536.f;
+    vel[1] = 90*(float)SDL_JoystickGetAxis(accelerometer, 1)/65536.f;
     x += vel[0];
     y += vel[1];
-    if (x + sprite.w > w || x < 0) vel[0] = -vel[0]/2;
-    if (y + sprite.h > h || y < 0) vel[1] = -vel[1]/2;
+    if (x + sprite.w > w) x = w - sprite.w;
+    if (x < 0) x = 0;
+    if (y + sprite.h > h) y = h - sprite.h;
+    if (y < 0) y = 0;
     return !done;
 }
 
 bool SpriteView::drawWorld(){
     /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
     SDL_RenderClear(renderer);
 
     SDL_Color color = { 255, 255, 255, 255 };
@@ -145,8 +153,6 @@ bool SpriteView::drawWorld(){
     /*Update the screen!*/
     SDL_RenderPresent(renderer);
 
-    if (x>w/2) Mix_PlayMusic(music,0);
-
     return !done;
 }
 
@@ -154,12 +160,18 @@ bool SpriteView::deactivate(){
     TTF_CloseFont(font);
 	SDL_DestroyTexture(sprite.texture);
 	sprite.texture = NULL;
+	done = true;
 }
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
+
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        exit(1);
+    }
     if(SDL_CreateWindowAndRenderer(0, 0, 0, &window, &renderer) < 0)
         exit(2);
 

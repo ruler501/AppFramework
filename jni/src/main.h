@@ -13,103 +13,15 @@ typedef struct Sprite
 	SDL_Texture* texture;
 	Uint16 w;
 	Uint16 h;
+	Uint16 x;
+	Uint16 y;
 } Sprite;
 
 SDL_Window *window;
 SDL_Renderer *renderer;
 
-class KeyEventProcessor : public EventProcessor{
-protected:
-	std::string *text, *composition;
-	bool *done;
-
-public:
-	KeyEventProcessor(EventController* controller, std::string &textRef, std::string &compRef, bool &doneRef)
-	: EventProcessor(controller, SDL_TEXTINPUT), text(&textRef), composition(&compRef), done(&doneRef)
-	{}
-
-	virtual ~KeyEventProcessor() {}
-
-	virtual bool process(SDL_Event &event);
-};
-
-class QuitEventProcessor : public EventProcessor{
-public:
-	bool *done;
-	QuitEventProcessor(EventController* controller, bool &doneRef)
-	: EventProcessor(controller, SDL_QUIT), done(&doneRef)
-	{}
-
-	virtual ~QuitEventProcessor() {}
-
-	virtual bool process(SDL_Event &event) { *done = true; }
-};
-
-class InputEventProcessor : public EventProcessor{
-protected:
-	std::string *text, *composition;
-
-public:
-	InputEventProcessor(EventController* controller, std::string &textRef, std::string &compRef)
-	: EventProcessor(controller, SDL_TEXTINPUT), text(&textRef), composition(&compRef)
-	{}
-
-	virtual ~InputEventProcessor() {}
-
-	virtual bool process(SDL_Event &event) {
-		*text += event.text.text;
-		*composition = std::string();
-	}
-};
-
-class EditEventProcessor : public EventProcessor{
-protected:
-	std::string *composition;
-
-public:
-	EditEventProcessor(EventController* controller, std::string &compRef)
-	: EventProcessor(controller, SDL_TEXTINPUT), composition(&compRef)
-	{}
-
-	virtual ~EditEventProcessor() {}
-
-	virtual bool process(SDL_Event &event) { *composition = std::string(event.edit.text); }
-};
-
-class MGestureEventProcessor : public EventProcessor{
-protected:
-	float* angle;
-
-public:
-	MGestureEventProcessor(EventController* controller, float &angleRef)
-	: EventProcessor(controller, SDL_MULTIGESTURE), angle(&angleRef)
-	{}
-
-	virtual ~MGestureEventProcessor() {}
-
-	virtual bool process(SDL_Event &event) { *angle += 180*event.mgesture.dTheta; }
-};
-
-class FMotionEventProcessor : public EventProcessor{
-protected:
-	int *x, *y;
-	int w, h;
-
-public:
-	FMotionEventProcessor(EventController* controller, int &xRef, int &yRef, int wi, int hi)
-	: EventProcessor(controller, SDL_FINGERMOTION), x(&xRef), y(&yRef), w(wi), h(hi)
-	{}
-
-	virtual ~FMotionEventProcessor() {}
-
-	virtual bool process(SDL_Event &event){
-		*x += w*event.tfinger.dx;
-		*y += h*event.tfinger.dy;
-	}
-};
-
 class SpriteView : public View {
-protected:
+public:
 	EventController* myController;
 	bool done;
 	Sprite sprite;
@@ -120,7 +32,6 @@ protected:
 	std::string text, composition;
 	Mix_Music *music;
 
-public:
 	SpriteView(EventController* controller);
 	~SpriteView();
 
@@ -128,6 +39,115 @@ public:
     virtual bool updateWorld();
     virtual bool drawWorld();
     virtual bool deactivate();
+};
+
+class KeyEventProcessor : public EventProcessor{
+protected:
+	SpriteView* myView;
+
+public:
+	KeyEventProcessor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_KEYDOWN), myView(that)
+	{}
+
+	virtual ~KeyEventProcessor() {}
+
+	virtual bool process(SDL_Event &event);
+};
+
+class QuitEventProcessor : public EventProcessor{
+private:
+	SpriteView* myView;
+public:
+	QuitEventProcessor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_QUIT), myView(that)
+	{}
+
+	virtual ~QuitEventProcessor() {}
+
+	virtual bool process(SDL_Event &event) { myView->done = true; }
+};
+
+class InputEventProcessor : public EventProcessor{
+protected:
+	SpriteView* myView;
+
+public:
+	InputEventProcessor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_TEXTINPUT), myView(that)
+	{}
+
+	virtual ~InputEventProcessor() {}
+
+	virtual bool process(SDL_Event &event) {
+		myView->text += event.text.text;
+		myView->composition = std::string();
+	}
+};
+
+class EditEventProcessor : public EventProcessor{
+protected:
+	SpriteView* myView;
+
+public:
+	EditEventProcessor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_TEXTEDITING), myView(that)
+	{}
+
+	virtual ~EditEventProcessor() {}
+
+	virtual bool process(SDL_Event &event) { myView->composition = std::string(event.edit.text); }
+};
+
+class MGestureEventProcessor : public EventProcessor{
+protected:
+	SpriteView* myView;
+
+public:
+	MGestureEventProcessor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_MULTIGESTURE), myView(that)
+	{}
+
+	virtual ~MGestureEventProcessor() {}
+
+	virtual bool process(SDL_Event &event) { myView->angle += 90*event.mgesture.dTheta; }
+};
+
+class FMotionEventProcessor : public EventProcessor{
+protected:
+	SpriteView* myView;
+
+public:
+	FMotionEventProcessor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_FINGERMOTION), myView(that)
+	{}
+
+	virtual ~FMotionEventProcessor() {}
+
+	virtual bool process(SDL_Event &event){
+		myView->x += myView->w*event.tfinger.dx;
+		myView->y += myView->h*event.tfinger.dy;
+	}
+};
+
+class FDownEventProcesor : public EventProcessor{
+protected:
+	SpriteView *myView;
+
+public:
+	FDownEventProcesor(EventController* controller, SpriteView* that)
+	: EventProcessor(controller, SDL_FINGERDOWN), myView(that)
+	{}
+
+//	virtual ~FDownEventProcessor() {}
+
+	virtual bool process(SDL_Event &event){
+
+		if (abs(event.tfinger.x-(myView->x+myView->sprite.w/2)) > 2*myView->sprite.w || abs(event.tfinger.y-myView->y+myView->sprite.h/2) > 2*myView->sprite.h){
+			if(SDL_IsTextInputActive()) SDL_StopTextInput();
+			else SDL_StartTextInput();
+		}
+	}
 };
 
 #endif // _MAIN_H_
