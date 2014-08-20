@@ -140,6 +140,7 @@ bool SpriteView::activate(){
     myEvents.push_back(new QuitEventProcessor(myController, this));
     myEvents.push_back(new FDownEventProcesor(myController, this));
     SDL_JoystickEventState(SDL_QUERY);
+    Mix_PlayMusic(music, -1);
     return true;
 }
 
