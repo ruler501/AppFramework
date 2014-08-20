@@ -34,8 +34,12 @@ Sprite LoadSprite(const char* file, SDL_Renderer* renderer)
 {
 	Sprite result;
 	result.texture = NULL;
-	result.w = 0;
-	result.h = 0;
+	result.position.w = 0;
+	result.position.h = 0;
+	result.position.x = 0;
+	result.position.y = 0;
+	result.scale = 1.f;
+	result.angle = 0.f;
 
     SDL_Surface* temp;
 
@@ -46,8 +50,8 @@ Sprite LoadSprite(const char* file, SDL_Renderer* renderer)
         fprintf(stderr, "Couldn't load %s: %s\n", file, SDL_GetError());
         return result;
     }
-    result.w = temp->w;
-    result.h = temp->h;
+    result.position.w = temp->w;
+    result.position.h = temp->h;
 
     /* Create texture from the image */
     result.texture = SDL_CreateTextureFromSurface(renderer, temp);
@@ -61,12 +65,34 @@ Sprite LoadSprite(const char* file, SDL_Renderer* renderer)
     return result;
 }
 
-void draw(const Sprite sprite, int x, int y, int angle)
-{
-	SDL_Rect destRect = {x, y, sprite.w, sprite.h};
-	SDL_Rect srcRect = {0, 0, sprite.w, sprite.h};
+bool Sprite::draw(){
+	SDL_Rect destRect = {position.x, position.y, scale*position.w, scale*position.h};
+	SDL_Rect srcRect = {0, 0, position.w, position.h};
 	/* Blit the sprite onto the screen */
-	SDL_RenderCopyEx(renderer, sprite.texture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+	SDL_RenderCopyEx(renderer, texture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
+	return true;
+}
+
+bool InputBox::draw(){
+    SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
+    SDL_RenderFillRect(renderer, &position);
+
+    if(font){
+        SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), textcolor);
+        if(surf){
+            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_FreeSurface(surf);
+            if(texture){
+                int iW, iH;
+                SDL_QueryTexture(texture, NULL, NULL, &iW, &iH);
+                SDL_Rect destRect = {position.x, position.y, std::min(iW, position.w), std::min(iH, position.h)};
+                SDL_Rect srcRect = {0, 0, std::min(iW, position.w), std::min(iH, position.h)};
+                SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
+                SDL_DestroyTexture(texture);
+                texture = NULL;
+            }
+        }
+    }
 }
 
 bool KeyEventProcessor::process(SDL_Event &event){
@@ -75,31 +101,33 @@ bool KeyEventProcessor::process(SDL_Event &event){
         myView->done = true;
         break;
     case SDLK_BACKSPACE:
-        if(myView->composition.length()) myView->composition.erase(myView->composition.end());
-        else if(myView->text.length()) myView->text.erase(myView->text.end());
+        if(myView->myInput.composition.length()) myView->myInput.composition.erase(myView->myInput.composition.end());
+        else if(myView->myInput.text.length()) myView->myInput.text.erase(myView->myInput.text.end());
         break;
     case SDLK_RETURN:
-        myView->text += '\n';
+        myView->myInput.text += '\n';
         break;
     }
 }
 
 SpriteView::SpriteView(EventController* controller)
-	: myController(controller), sprite(LoadSprite("image.bmp", renderer)), x(0), y(0), angle(0),
+	: myController(controller), sprite(LoadSprite("image.bmp", renderer)),
 	vel({0,0}), done(false), font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
 	music(Mix_LoadMUS("music.ogg"))
-	{
-
+    {
 	    accelerometer = SDL_JoystickOpen(0);
 	    if (accelerometer == NULL) done = true;
 	    SDL_GetWindowSize(window, &w, &h);
+	    for(int i=0; i < 8; i++) colors[i] = i*32;
+	    myInput.position = {w/2, h/4, w/4, h/8};
     }
 
 SpriteView::~SpriteView(){
     for(auto &a : myEvents) delete a;
     TTF_CloseFont(font);
+    font = nullptr;
 	SDL_DestroyTexture(sprite.texture);
-	sprite.texture = NULL;
+	sprite.texture = nullptr;
 	done = true;
 }
 
@@ -119,21 +147,33 @@ bool SpriteView::updateWorld(){
     SDL_JoystickUpdate();
     vel[0] = 90*(float)SDL_JoystickGetAxis(accelerometer, 0)/65536.f;
     vel[1] = 90*(float)SDL_JoystickGetAxis(accelerometer, 1)/65536.f;
-    x += vel[0];
-    y += vel[1];
-    if (x + sprite.w > w) x = w - sprite.w;
-    if (x < 0) x = 0;
-    if (y + sprite.h > h) y = h - sprite.h;
-    if (y < 0) y = 0;
+    sprite.position.x += vel[0];
+    sprite.position.y += vel[1];
+    if (sprite.position.x + sprite.position.w*sprite.scale > w){
+        sprite.position.x = w - sprite.position.w*sprite.scale;
+        if (ccol < 7) ++ccol;
+    }
+    if (sprite.position.x < 0){
+        sprite.position.x = 0;
+        if (ccol > 0) --ccol;
+    }
+    if (sprite.position.y + sprite.position.h*sprite.scale > h){
+        sprite.position.y = h - sprite.position.h*sprite.scale;
+        if (ccol < 7) ++ccol;
+    }
+    if (sprite.position.y < 0){
+        sprite.position.y = 0;
+        if(ccol > 0) --ccol;
+    }
     return !done;
 }
 
 bool SpriteView::drawWorld(){
     /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+    SDL_SetRenderDrawColor(renderer, colors[ccol], colors[ccol], colors[ccol], 0xFF);
     SDL_RenderClear(renderer);
 
-    SDL_Color color = { 255, 255, 255, 255 };
+    SDL_Color color = {0xFF, 0xFF, 0xFF, 0xFF};
     if(font){
         SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), color);
         if(surf){
@@ -150,7 +190,8 @@ bool SpriteView::drawWorld(){
         }
     }
 
-    draw(sprite, x, y, angle);
+    myInput.draw();
+    sprite.draw();
 
     /*Update the screen!*/
     SDL_RenderPresent(renderer);

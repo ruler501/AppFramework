@@ -7,15 +7,43 @@
 #include "EventProcessor.h"
 #include "View.h"
 
+bool enclosedPoint(SDL_Point &point, SDL_Rect &rect){
+	bool ret = true;
+	ret &= abs(point.x - (rect.x + rect.w/2))*2 < rect.w/2;
+	ret &= abs(point.y - (rect.y + rect.h/2))*2 < rect.h/2;
+	return ret;
+}
 
-typedef struct Sprite
-{
+class GUIElement{
+public:
+	SDL_Rect position;
+
+	virtual bool draw() = 0;
+};
+
+class Sprite : public GUIElement{
+public:
 	SDL_Texture* texture;
-	Uint16 w;
-	Uint16 h;
-	Uint16 x;
-	Uint16 y;
-} Sprite;
+	float angle, scale;
+
+	virtual bool draw();
+};
+
+class InputBox : public GUIElement{
+public:
+	TTF_Font *font;
+	std::string text;
+	std::string composition;
+	SDL_Color background, textcolor;
+
+	InputBox() : background({0xFF, 0xFF, 0xFF, 0xFF}), textcolor({0x00, 0x00, 0x00, 0xFF}), font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)) {}
+	~InputBox() {
+		TTF_CloseFont(font);
+		font = nullptr;
+    }
+
+	virtual bool draw();
+};
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -25,12 +53,13 @@ public:
 	EventController* myController;
 	bool done;
 	Sprite sprite;
-	int x, y, w, h, vel[2];
-	float angle;
+	int w, h, ccol, cdir, vel[2], colors[8];
+	float angle, scale;
 	TTF_Font *font;
 	SDL_Joystick *accelerometer;
 	std::string text, composition;
 	Mix_Music *music;
+	InputBox myInput;
 
 	SpriteView(EventController* controller);
 	~SpriteView();
@@ -80,8 +109,8 @@ public:
 	virtual ~InputEventProcessor() {}
 
 	virtual bool process(SDL_Event &event) {
-		myView->text += event.text.text;
-		myView->composition = std::string();
+		myView->myInput.text += event.text.text;
+		myView->myInput.composition = std::string();
 	}
 };
 
@@ -96,7 +125,7 @@ public:
 
 	virtual ~EditEventProcessor() {}
 
-	virtual bool process(SDL_Event &event) { myView->composition = std::string(event.edit.text); }
+	virtual bool process(SDL_Event &event) { myView->myInput.composition = std::string(event.edit.text); }
 };
 
 class MGestureEventProcessor : public EventProcessor{
@@ -110,7 +139,10 @@ public:
 
 	virtual ~MGestureEventProcessor() {}
 
-	virtual bool process(SDL_Event &event) { myView->angle += 90*event.mgesture.dTheta; }
+	virtual bool process(SDL_Event &event) {
+		myView->sprite.angle += 90*event.mgesture.dTheta;
+ 		myView->sprite.scale +=  (float)event.mgesture.dDist*myView->h/float(myView->sprite.position.w + myView->sprite.position.h);
+	}
 };
 
 class FMotionEventProcessor : public EventProcessor{
@@ -125,8 +157,8 @@ public:
 	virtual ~FMotionEventProcessor() {}
 
 	virtual bool process(SDL_Event &event){
-		myView->x += myView->w*event.tfinger.dx;
-		myView->y += myView->h*event.tfinger.dy;
+		myView->sprite.position.x += myView->w*event.tfinger.dx;
+		myView->sprite.position.y += myView->h*event.tfinger.dy;
 	}
 };
 
@@ -141,9 +173,11 @@ public:
 
 //	virtual ~FDownEventProcessor() {}
 
-	virtual bool process(SDL_Event &event){
 
-		if (abs(event.tfinger.x-(myView->x+myView->sprite.w/2)) > 2*myView->sprite.w || abs(event.tfinger.y-myView->y+myView->sprite.h/2) > 2*myView->sprite.h){
+	virtual bool process(SDL_Event &event){
+		SDL_Point point = {event.tfinger.x*myView->w, event.tfinger.y*myView->h};
+		SDL_Rect rect = myView->myInput.position;
+		if (enclosedPoint(point, rect)){
 			if(SDL_IsTextInputActive()) SDL_StopTextInput();
 			else SDL_StartTextInput();
 		}
