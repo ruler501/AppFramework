@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import platform
 import subprocess
 import os
@@ -19,7 +21,17 @@ def buildCurrent():
 	subprocess.call('codeblocks Framework.cbp --build'
 	
 def buildIOS():
-	print("Not supported yet")
+	print("Please know that this will not work with Game Center curretnly")
+	if platform.name().lower() != 'darwin':
+		print "Not supported on non-OSX hosts"
+		return False
+	shutil.copytree('android/jni/SDL2', 'SDL2')
+	os.chdir('SDL2/build-scripts')
+	subprocess.call('sh iosbuild.sh', shell=True)
+	os.chdir('../../')
+	if not os.path.isdir('/Developer/Platforms/iOS.platform/Developer/Library/XCode/Project Templates/SDL2'):
+		shutil.copytree('/Developer/Platforms/iOS.platform/Developer/Library/XCode/Project Templates/SDL2', 'SDL2/Xcode-iOS/Template/SDL iOS Application')
+	print('Start a new project using the template /Developer/Platforms/iOS.platform/Developer/Library/XCode/Project Templates/SDL2.  The project should be immediately ready for use with SDL. Just add the source files in src')
 	
 def buildLinux():
 	print("Not supported yet")
@@ -31,6 +43,7 @@ def buildWindows():
 	print("Not supported yet")
 	
 def buildWinPhone():
+	print("Not supported yet")
 	
 builds = {'android' : buildAndroid, 'blackberry' : buildBlackberry, 'current' : buildCurrent, 'ios' : buildIOS,
 		  'linux' : buildLinux, 'osx' : buildOSX, 'windows' : buildWindows, 'windowsPhone' : buildWinPhone}
