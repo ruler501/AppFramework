@@ -15,8 +15,9 @@
 					<Add option="-g" />
 				</Compiler>
 				<ExtraCommands>
-					<Add before="cmd /c cd jni/src &amp;&amp; ndk-build -j8 NDK_DEBUG=1" />
-					<Add before="cmd /c ant debug install" />
+					<Add before="cmd /c cp src/* android/jni/src" />
+					<Add before="cmd /c cd android/jni/src &amp;&amp; ndk-build -j8 NDK_DEBUG=1" />
+					<Add before="cmd /c cd android &amp;&amp; ant debug install" />
 					<Add before="adb shell am start -n org.libsdl.app/org.libsdl.app.SDLActivity" />
 					<Mode after="always" />
 				</ExtraCommands>
@@ -37,33 +38,19 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="AndroidManifest.xml">
+		<Unit filename="android/AndroidManifest.xml">
 			<Option target="Android" />
 		</Unit>
-		<Unit filename="jni/Application.mk">
+		<Unit filename="android/jni/Application.mk">
 			<Option target="Android" />
 		</Unit>
-		<Unit filename="jni/src/Android.mk">
-			<Option target="Android" />
-		</Unit>
-		<Unit filename="jni/src/EventController.cpp">
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="jni/src/EventController.h">
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="jni/src/EventProcessor.h">
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="jni/src/View.h">
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="jni/src/main.cpp">
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="jni/src/main.h">
-			<Option target="Release" />
-		</Unit>
+		<Unit filename="android/jni/src/Android.mk" />
+		<Unit filename="src/EventController.cpp" />
+		<Unit filename="src/EventController.h" />
+		<Unit filename="src/EventProcessor.h" />
+		<Unit filename="src/View.h" />
+		<Unit filename="src/main.cpp" />
+		<Unit filename="src/main.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
