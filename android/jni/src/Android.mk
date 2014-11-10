@@ -21,6 +21,12 @@ LOCAL_SRC_FILES += main.cpp \
 
 LOCAL_SRC_FILES += EventController.cpp
 
+LOCAL_SRC_FILES += Billing/ph_os_android_callbacks.cpp
+
+LOCAL_SRC_FILES += Billing/XF_Billing.cpp
+
+LOCAL_SRC_FILES += Billing/XF_Billing_Android.cpp
+
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_ttf SDL2_net
 
 LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -llog
