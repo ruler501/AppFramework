@@ -20,3 +20,8 @@ public:
     //! Deactivates the View, should turn off all of its events.
     virtual bool deactivate() = 0;
 };
+
+
+class Overlay : public View{
+
+};

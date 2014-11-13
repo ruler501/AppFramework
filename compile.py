@@ -10,6 +10,8 @@ import glob
 def buildAndroid():
 	for f in glob.glob('src/*.cpp'):
 		shutil.copy2(f, 'android/jni/src')
+	for f in glob.glob('src/*.h'):
+		shutil.copy2(f, 'android/jni/src')
 	os.chdir('android')
 	subprocess.call('android update project --path '+os.getcwd(), shell = True)
 	os.chdir('jni/src')
