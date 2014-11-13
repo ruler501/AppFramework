@@ -11,6 +11,8 @@ protected:
     std::vector<EventProcessor*> myEvents;
 
 public:
+    bool activated;
+
     //! Sets the world state to the start position and registers event processors
     virtual bool activate() = 0;
     //! Updates the world state, but doesn't output to the screen/audio

@@ -8,10 +8,23 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "SDL_mixer.h"
 
 #include "main.h"
+#include "example.h"
 
-std::deque<View*> views;
+SDL_Window *window;
+SDL_Renderer *renderer;
+std::deque<std::shared_ptr<View> > views;
+std::deque<std::shared_ptr<Overlay> > overlays;
+#ifdef __ANDROID_API__
+    JNIEnv* env;
+    jobject activity;
+#endif
+const char* pref_path;
+EventController viewController;
+EventController overlayController;
+std::string uid;
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
@@ -22,198 +35,70 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
     return elems;
 }
 
-
 std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     split(s, delim, elems);
     return elems;
 }
 
-/* Adapted from SDL's testspriteminimal.c */
-Sprite LoadSprite(const char* file, SDL_Renderer* renderer)
+bool enclosedPoint(SDL_Point &point, SDL_Rect &rect){
+	bool ret = true;
+	ret &= abs(point.x - (rect.x + rect.w/2))*2 < rect.w/2;
+	ret &= abs(point.y - (rect.y + rect.h/2))*2 < rect.h/2;
+	return ret;
+}
+
+template <typename T>
+std::string to_string(T value)
 {
-	Sprite result;
-	result.texture = NULL;
-	result.position.w = 0;
-	result.position.h = 0;
-	result.position.x = 0;
-	result.position.y = 0;
-	result.scale = 1.f;
-	result.angle = 0.f;
-
-    SDL_Surface* temp;
-
-    /* Load the sprite image */
-    temp = SDL_LoadBMP(file);
-    if (temp == NULL)
-	{
-        fprintf(stderr, "Couldn't load %s: %s\n", file, SDL_GetError());
-        return result;
-    }
-    result.position.w = temp->w;
-    result.position.h = temp->h;
-
-    /* Create texture from the image */
-    result.texture = SDL_CreateTextureFromSurface(renderer, temp);
-    if (!result.texture) {
-        fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
-        SDL_FreeSurface(temp);
-        return result;
-    }
-    SDL_FreeSurface(temp);
-
-    return result;
+    std::ostringstream os ;
+    os << value ;
+    return os.str() ;
 }
 
-bool Sprite::draw(){
-	SDL_Rect destRect = {position.x, position.y, scale*position.w, scale*position.h};
-	SDL_Rect srcRect = {0, 0, position.w, position.h};
-	/* Blit the sprite onto the screen */
-	SDL_RenderCopyEx(renderer, texture, &srcRect, &destRect, angle, NULL, SDL_FLIP_NONE);
-	return true;
-}
+#ifdef __ANDROID_API__
+    std::string getUID(){
+        jclass  activityClass = env->GetObjectClass(activity);
 
-bool InputBox::draw(){
-    SDL_SetRenderDrawColor(renderer, background.r, background.g, background.b, background.a);
-    SDL_RenderFillRect(renderer, &position);
+        jmethodID  mid_getContentResolver =env->GetMethodID(activityClass,"getContentResolver","()Landroid/content/ContentResolver;");
 
-    if(font){
-        SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), textcolor);
-        if(surf){
-            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-            if(texture){
-                int iW, iH;
-                SDL_QueryTexture(texture, NULL, NULL, &iW, &iH);
-                SDL_Rect destRect = {position.x, position.y, std::min(iW, position.w), std::min(iH, position.h)};
-                SDL_Rect srcRect = {0, 0, std::min(iW, position.w), std::min(iH, position.h)};
-                SDL_RenderCopy(renderer, texture, &srcRect, &destRect);
-                SDL_DestroyTexture(texture);
-                texture = NULL;
-            }
-        }
-        return true;
+        jobject contentObj =  env->CallObjectMethod(activity, mid_getContentResolver);
+
+        if(contentObj == NULL)
+            return "method 1 null";
+
+        jclass secClass=env->FindClass("android/provider/Settings$Secure");
+
+        if(secClass == NULL)
+            return "class 2 null";
+
+        jmethodID secMid = env->GetStaticMethodID(secClass,"getString","(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;");
+
+        if(secMid == NULL)
+            return "method 2 null";
+
+        jstring jStringParam = env->NewStringUTF("android_id");
+        jstring jandroid_id = (jstring) env->CallStaticObjectMethod(secClass,secMid,contentObj,jStringParam);
+        env->DeleteLocalRef(jStringParam);
+
+        if(jandroid_id == NULL)
+            return "android id null";
+
+        const char *nativeString = env->GetStringUTFChars(jandroid_id, JNI_FALSE);
+
+        return std::string(nativeString);
     }
-    return false;
-}
-
-bool KeyEventProcessor::process(SDL_Event &event){
-    switch(event.key.keysym.sym){
-    case SDLK_AC_BACK:
-        myView->done = true;
-        break;
-    case SDLK_BACKSPACE:
-        if(myView->myInput.composition.length()) myView->myInput.composition.erase(myView->myInput.composition.end());
-        else if(myView->myInput.text.length()) myView->myInput.text.erase(myView->myInput.text.end());
-        break;
-    case SDLK_RETURN:
-        myView->myInput.text += '\n';
-        break;
+#else
+    std::string getUID(){
+        return to_string(rand());
     }
-    return true;
-}
-
-SpriteView::SpriteView(EventController* controller)
-	: myController(controller), sprite(LoadSprite("image.bmp", renderer)),
-	done(false), vel({0,0}), font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
-	music(Mix_LoadMUS("music.ogg"))
-    {
-	    accelerometer = SDL_JoystickOpen(0);
-	    if (accelerometer == NULL) done = true;
-	    SDL_GetWindowSize(window, &w, &h);
-	    for(int i=0; i < 8; i++) colors[i] = i*32;
-	    myInput.position = {w/2, h/4, w/4, h/8};
-    }
-
-SpriteView::~SpriteView(){
-    for(auto &a : myEvents) delete a;
-    TTF_CloseFont(font);
-    font = nullptr;
-	SDL_DestroyTexture(sprite.texture);
-	sprite.texture = nullptr;
-	done = true;
-}
-
-bool SpriteView::activate(){
-    myEvents.push_back(new KeyEventProcessor(myController, this));
-    myEvents.push_back(new FMotionEventProcessor(myController, this));
-    myEvents.push_back(new InputEventProcessor(myController, this));
-    myEvents.push_back(new EditEventProcessor(myController, this));
-    myEvents.push_back(new MGestureEventProcessor(myController, this));
-    myEvents.push_back(new QuitEventProcessor(myController, this));
-    myEvents.push_back(new FDownEventProcesor(myController, this));
-    SDL_JoystickEventState(SDL_QUERY);
-    Mix_PlayMusic(music, -1);
-    return true;
-}
-
-bool SpriteView::updateWorld(){
-    SDL_JoystickUpdate();
-    vel[0] = 90*(float)SDL_JoystickGetAxis(accelerometer, 0)/65536.f;
-    vel[1] = 90*(float)SDL_JoystickGetAxis(accelerometer, 1)/65536.f;
-    sprite.position.x += vel[0];
-    sprite.position.y += vel[1];
-    if (sprite.position.x + sprite.position.w*sprite.scale > w){
-        sprite.position.x = w - sprite.position.w*sprite.scale;
-        if (ccol < 7) ++ccol;
-    }
-    if (sprite.position.x < 0){
-        sprite.position.x = 0;
-        if (ccol > 0) --ccol;
-    }
-    if (sprite.position.y + sprite.position.h*sprite.scale > h){
-        sprite.position.y = h - sprite.position.h*sprite.scale;
-        if (ccol < 7) ++ccol;
-    }
-    if (sprite.position.y < 0){
-        sprite.position.y = 0;
-        if(ccol > 0) --ccol;
-    }
-    return !done;
-}
-
-bool SpriteView::drawWorld(){
-    /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, colors[ccol], colors[ccol], colors[ccol], 0xFF);
-    SDL_RenderClear(renderer);
-
-    SDL_Color color = {0xFF, 0xFF, 0xFF, 0xFF};
-    if(font){
-        SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), color);
-        if(surf){
-            SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_FreeSurface(surf);
-            if(texture){
-                int iW, iH;
-                SDL_QueryTexture(texture, NULL, NULL, &iW, &iH);
-                SDL_Rect destRect = {w/2 - iW/2, h/2 - iH/2, iW, iH};
-                SDL_RenderCopy(renderer, texture, NULL, &destRect);
-                SDL_DestroyTexture(texture);
-                texture = NULL;
-            }
-        }
-    }
-
-    myInput.draw();
-    sprite.draw();
-
-    /*Update the screen!*/
-    SDL_RenderPresent(renderer);
-
-    return !done;
-}
-
-bool SpriteView::deactivate(){
-    for(auto& a : myEvents) a->deactivate();
-    return true;
-}
+#endif //__ANDROID_API__
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | SDL_INIT_TIMER) < 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
@@ -222,43 +107,67 @@ int main(int argc, char *argv[])
 
 	TTF_Init();
 
-	int audio_rate = 22050;
-    Uint16 audio_format = AUDIO_S16; /* 16-bit stereo */
-    int audio_channels = 2;
-    int audio_buffers = 4096;
+#ifdef __ANDROID_API__
+        env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+        activity = static_cast<jobject>(SDL_AndroidGetActivity());
+#endif
 
-	if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers)) {
-        printf("Unable to open audio!\n");
-        exit(1);
-    }
+#ifdef __ANDROID_API__
+    pref_path = SDL_AndroidGetInternalStoragePath();
+#else
+    pref_path = SDL_GetPrefPath("fillmyblank", "app");
+#endif
 
-    /* Main render loop */
+    uid = getUID();
+
+    // Main render loop
     SDL_Event event;
-    EventController ourController;
-	SpriteView* tempView = new SpriteView(&ourController);
-	views.push_back(tempView);
+
+    views.push_back(make_shared<SpriteView>(&viewController));
+
 	int millis = SDL_GetTicks();
 	while(!views.empty()){
-        View* current = views[0];
-        current->activate();
+        if(!views[0]->activated) views[0]->activate();
         bool cont = true;
         while(cont){
             millis = SDL_GetTicks();
             while(SDL_PollEvent(&event)){
-                ourController.process(event);
+                if(!overlays.empty()){
+                    if(!overlayController.process(event)) viewController.process(event);
+                }
+                else viewController.process(event);
             }
-            cont &= current->updateWorld();
-            cont &= current->drawWorld();
-            SDL_Delay(17-millis+SDL_GetTicks());
+            cont &= views[0]->updateWorld();
+            cont &= views[0]->drawWorld();
+            if(!overlays.empty()){
+                bool contb = false;
+                if(!overlays[0]->activated)
+                    overlays[0]->activate();
+                contb |= overlays[0]->updateWorld();
+                contb |= overlays[0]->drawWorld();
+                if(contb){
+                    overlays[0]->deactivate();
+                    overlays.pop_front();
+                }
+            }
         }
-        current->deactivate();
+        if(views[0]->activated){
+            views[0]->deactivate();
+        }
+        else views[0]->deactivate();
         views.pop_front();
+        for(unsigned int i = 0; i<overlays.size(); i++){
+            overlays[i]->deactivate();
+        }
+        overlays.clear();
+        overlayController.clearEvents();
+        viewController.clearEvents();
 	}
 
 	SDL_DestroyRenderer(renderer);
-	renderer = NULL;
+	renderer = nullptr;
 	SDL_DestroyWindow(window);
-	window = NULL;
+	window = nullptr;
 
 	TTF_Quit();
 

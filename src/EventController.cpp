@@ -5,36 +5,27 @@
 #include "EventProcessor.h"
 
 bool EventController::process(SDL_Event event){
-	bool result = true;
-	std::vector<std::shared_ptr<EventProcessor> > thisEvent;
+	bool result = false;
+	std::vector<EventProcessor*> thisEvent;
 	//eLock.lock();
-	try{
-		thisEvent = myEvents.at(event.type);
-	} catch (const std::out_of_range &oor){
-//		eLock.unlock();
-		return false;
-	}
+    thisEvent = myEvents[static_cast<SDL_EventType>(event.type)];
 	//eLock.unlock();
 	for(auto& ep : thisEvent){
-		result = result && ep->process(event);
+		result |= ep->process(event);
 	}
 	return result;
 }
 
 bool EventController::registerEvent(EventProcessor* processor, SDL_EventType event){
 	//eLock.lock()
-	try{
-		myEvents.at(event).push_back(std::shared_ptr<EventProcessor>(processor));
-	} catch (const std::out_of_range &oor){
-		myEvents[event] = std::vector<std::shared_ptr<EventProcessor> >(1,std::shared_ptr<EventProcessor>(processor));
-	}
+	myEvents[event].push_back(processor);
 	//eLock.unlock()
 	return true;
 }
 
 bool EventController::deactivateEvent(EventProcessor* processor, SDL_EventType event){
 	//eLock.lock();
-	std::vector<std::shared_ptr<EventProcessor> > thisEvent;
+	std::vector<EventProcessor*> thisEvent;
 	try{
 		thisEvent = myEvents.at(event);
 	} catch (const std::out_of_range &oor){
@@ -42,9 +33,19 @@ bool EventController::deactivateEvent(EventProcessor* processor, SDL_EventType e
 		return false;
 	}
 	//eLock.unlock();
-	thisEvent.erase(std::remove(thisEvent.begin(), thisEvent.end(), std::shared_ptr<EventProcessor>(processor)), thisEvent.end());
+	thisEvent.erase(std::remove(thisEvent.begin(), thisEvent.end(), processor), thisEvent.end());
 	//eLock.lock();
 	myEvents[event] = thisEvent;
 //	eLock.unlock();
 	return true;
+}
+
+bool EventController::clearEvents(){
+    /*for(auto& ev : myEvents){
+		for(auto& e : ev.second){
+			delete e;
+		}
+    }*/
+    myEvents.clear();
+    return true;
 }

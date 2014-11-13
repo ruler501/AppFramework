@@ -17,9 +17,11 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../SDL2_net \
 # Add your application source files here...
 LOCAL_SRC_FILES := $(SDL_PATH)/src/main/android/SDL_android_main.c \
 
-LOCAL_SRC_FILES += main.cpp \
+LOCAL_SRC_FILES += main.cpp
 
 LOCAL_SRC_FILES += EventController.cpp
+
+LOCAL_SRC_FILES += example.cpp
 
 LOCAL_SRC_FILES += Billing/ph_os_android_callbacks.cpp
 

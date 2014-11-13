@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 #include <mutex>
-#include <memory>
 
 #include "SDL.h"
 
@@ -14,7 +13,7 @@ class EventProcessor;
 //! Controls the event processors, effectively a singleton
 class EventController{
 protected:
-	std::map<SDL_EventType, std::vector<std::shared_ptr<EventProcessor> > > myEvents;
+	std::map<SDL_EventType, std::vector<EventProcessor*> > myEvents;
 //	std::unique_lock<std::mutex> eLock;
 
 public:
@@ -24,6 +23,8 @@ public:
 	bool registerEvent(EventProcessor* processor, SDL_EventType event);
 	//! deactivates a given processor
 	bool deactivateEvent(EventProcessor* processor, SDL_EventType event);
+	//! delete all events
+	bool clearEvents();
 };
 
 #endif
