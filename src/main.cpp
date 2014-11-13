@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 #ifdef __ANDROID_API__
     pref_path = SDL_AndroidGetInternalStoragePath();
 #else
-    pref_path = SDL_GetPrefPath("fillmyblank", "app");
+    pref_path = SDL_GetPrefPath("myapp", "game");
 #endif
 
     uid = getUID();
