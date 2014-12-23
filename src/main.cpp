@@ -12,6 +12,7 @@
 
 #include "main.h"
 #include "example.h"
+#include "Facebook/Facebook.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -25,21 +26,6 @@ const char* pref_path;
 EventController viewController;
 EventController overlayController;
 std::string uid;
-
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, elems);
-    return elems;
-}
 
 bool enclosedPoint(SDL_Point &point, SDL_Rect &rect){
 	bool ret = true;
@@ -94,6 +80,26 @@ std::string to_string(T value)
     }
 #endif //__ANDROID_API__
 
+bool fbLogin(){
+    goodCall* tCall = new goodCall;
+
+    tCall->waiting = SDL_CreateCond();
+    SDL_mutex* tMutex = SDL_CreateMutex();
+
+    JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
+    std::string mClassPath = "com/myapp/game/MyGame";
+
+    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+
+    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
+
+    jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "findFriendIDs", "(I)V");
+
+    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tCall);
+}
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -115,7 +121,7 @@ int main(int argc, char *argv[])
 #ifdef __ANDROID_API__
     pref_path = SDL_AndroidGetInternalStoragePath();
 #else
-    pref_path = SDL_GetPrefPath("myapp", "game");
+    pref_path = SDL_GetPrefPath("fillmyblank", "app");
 #endif
 
     uid = getUID();
@@ -124,6 +130,8 @@ int main(int argc, char *argv[])
     SDL_Event event;
 
     views.push_back(make_shared<SpriteView>(&viewController));
+
+	fbLogin();
 
 	int millis = SDL_GetTicks();
 	while(!views.empty()){

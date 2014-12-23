@@ -20,6 +20,15 @@ import com.ironcode.droid.util.IabResult;
 import com.ironcode.droid.util.Inventory;
 import com.ironcode.droid.util.Purchase;
 
+import com.sromku.simple.fb.Permission;
+import com.sromku.simple.fb.SimpleFacebook;
+import com.sromku.simple.fb.SimpleFacebookConfiguration;
+import com.sromku.simple.fb.utils.Logger;
+import com.sromku.simple.fb.SessionManager;
+import com.sromku.simple.fb.listeners.OnLoginListener;
+import com.sromku.simple.fb.listeners.OnFriendsListener;
+import com.sromku.simple.fb.entities.Profile;
+
 import android.os.*;
 import android.util.Base64;
 import android.util.Log;
@@ -51,6 +60,7 @@ public class MyGame extends SDLActivity {
 	private static final int REQUEST_INAPP_PURCHASE = 1006;
 	private static final String ICPACKAGENAME = "com.mygame.game";
 	private static final String LOGPREFIX = ICPACKAGENAME;
+	private SimpleFacebook mSimpleFacebook = null;
 
 	// Override getContext so we can return this activity context
     public static MyGame GetActivity() {
@@ -68,7 +78,21 @@ public class MyGame extends SDLActivity {
         mBillingHelper = new IabHelper(this, base64EncodedPublicKey);
         mBillingHelper.enableDebugLogging(true, LOGPREFIX);
         mBillingHelper.startSetup(mIabFinishedHelper);
+		
+		Permission[] permissions = new Permission[] {
+			Permission.USER_FRIENDS,
+			Permission.EMAIL
+		};
 
+		SimpleFacebookConfiguration configuration = new SimpleFacebookConfiguration.Builder()
+			.setAppId("770450676382785")
+			.setNamespace("testingapptwoasd")
+			.setPermissions(permissions)
+			.build();
+
+		SimpleFacebook.setConfiguration(configuration);
+
+		mSimpleFacebook = SimpleFacebook.getInstance(this);
 	}
 
 	// IN APP PURCHASE CODE FOLLOWS
@@ -286,5 +310,44 @@ public class MyGame extends SDLActivity {
 		 }
 	 });
 
+	}
+
+	public native void signalDone(int pointer, boolean result);
+
+	public void findFriendIDs(final int pointer)
+	{
+		Log.d(LOGPREFIX, Integer.toString(pointer));
+		OnLoginListener onLoginListener = new OnLoginListener() {
+			@Override
+			public void onLogin() {
+				// change the state of the button or do whatever you want
+				Log.i(LOGPREFIX, "Logged in");
+				signalDone(pointer, true);
+			}
+
+			@Override
+			public void onNotAcceptingPermissions(Permission.Type type) {
+				// user didn't accept READ or WRITE permission
+				Log.w(LOGPREFIX, String.format("You didn't accept %s permissions", type.name()));
+				Log.d(LOGPREFIX, Integer.toString(pointer));
+				signalDone(pointer, false);
+			}
+
+			@Override
+			public void onThinking(){
+				return;
+			}
+
+			public void onFail(String reason){
+				Log.d(LOGPREFIX, reason);
+				signalDone(pointer, false);
+			}
+
+			public void onException(Throwable throwable){
+				signalDone(pointer, false);
+			}
+		};
+
+		mSimpleFacebook.login(onLoginListener);
 	}
 }

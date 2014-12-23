@@ -29,6 +29,8 @@ LOCAL_SRC_FILES += Billing/XF_Billing.cpp
 
 LOCAL_SRC_FILES += Billing/XF_Billing_Android.cpp
 
+LOCAL_SRC_FILES += Facebook/CallbacksAndroid.cpp
+
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_ttf SDL2_net
 
 LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -llog
