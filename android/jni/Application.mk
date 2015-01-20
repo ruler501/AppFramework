@@ -7,4 +7,5 @@ APP_ABI := armeabi armeabi-v7a
 APP_STL := gnustl_static
 APP_PLATFORM := android-12
 APP_OPTIM := debug
-APP_CPPFLAGS += -std=c++11 -fexceptions -fpermissive -Wall -Wextra
+APP_CPPFLAGS += -std=gnu++11 -fexceptions -frtti -DCC_ENABLE_CHIPMUNK_INTEGRATION=1 -Wall -Wextra
+NDK_TOOLCHAIN_VERSION := 4.8

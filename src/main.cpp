@@ -13,6 +13,7 @@
 #include "main.h"
 #include "example.h"
 #include "Facebook/Facebook.h"
+#include "GooglePlus/GooglePlus.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -132,6 +133,7 @@ int main(int argc, char *argv[])
     views.push_back(make_shared<SpriteView>(&viewController));
 
 	fbLogin();
+	if(!initGPS()) gpLogin;
 
 	int millis = SDL_GetTicks();
 	while(!views.empty()){

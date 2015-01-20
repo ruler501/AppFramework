@@ -15,10 +15,9 @@
 					<Add option="-g" />
 				</Compiler>
 				<ExtraCommands>
-					<Add before="cmd /c cp src/* android/jni/src" />
-					<Add before="cmd /c cd android/jni/src &amp;&amp; ndk-build -j8 NDK_DEBUG=1" />
+					<Add before="cmd /c cp -r src/* android/jni/src" />
+					<Add before="cmd /c cd android &amp;&amp; ndk-build -j8 NDK_DEBUG=1" />
 					<Add before="cmd /c cd android &amp;&amp; ant debug install" />
-					<Add before="adb shell am start -n org.libsdl.app/org.libsdl.app.SDLActivity" />
 					<Mode after="always" />
 				</ExtraCommands>
 			</Target>
@@ -47,6 +46,27 @@
 		<Unit filename="android/jni/src/Android.mk">
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="android/src/com/myapp/game/MyGame.java">
+			<Option target="Android" />
+		</Unit>
+		<Unit filename="src/Billing/XF_Billing.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Billing/XF_Billing.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Billing/XF_Billing_Android.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Billing/XF_Billing_Android.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Billing/ph_os_android_callbacks.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Billing/ph_os_android_callbacks.h">
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/EventController.cpp">
 			<Option target="Release" />
 		</Unit>
@@ -54,6 +74,18 @@
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/EventProcessor.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Facebook/CallbacksAndroid.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Facebook/Facebook.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/GooglePlus/GooglePlus.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/GooglePlus/GooglePlus.h">
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/View.h">

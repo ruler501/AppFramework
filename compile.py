@@ -5,18 +5,15 @@ import subprocess
 import os
 import shutil
 import sys
-import glob
+import fnmatch
 
 def buildAndroid():
-	for f in glob.glob('src/*.cpp'):
-		shutil.copy2(f, 'android/jni/src')
-	for f in glob.glob('src/*.h'):
-		shutil.copy2(f, 'android/jni/src')
+	shutil.rmtree('android/jni/src')
+	shutil.copytree('src','android/jni/src')
+	shutil.copy2('android/Android.mk', 'android/jni/src')
 	os.chdir('android')
 	subprocess.call('android update project --path '+os.getcwd(), shell = True)
-	os.chdir('jni/src')
 	subprocess.call('ndk-build -j8', shell=True)
-	os.chdir('../../')
 	subprocess.call('ant debug install', shell=True)
 
 def buildBlackberry():
