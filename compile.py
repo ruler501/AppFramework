@@ -12,8 +12,17 @@ def buildAndroid():
 	shutil.copytree('src','android/jni/src')
 	shutil.copy2('android/Android.mk', 'android/jni/src')
 	os.chdir('android')
-	subprocess.call('android update project --path '+os.getcwd(), shell = True)
-	subprocess.call('ndk-build -j8', shell=True)
+	if subprocess.call('android update project --path '+os.getcwd(), shell = True) != 0:
+		return -1
+	os.chdir('facebook-android-sdk/facebook')
+	if subprocess.call('android update project --path '+os.getcwd()+' --target android-12', shell = True) != 0:
+		return -1
+	os.chdir('../../google-play-services_lib')
+	if subprocess.call('android update project --path '+os.getcwd()+' --target android-12', shell = True) != 0:
+		return -1
+	os.chdir('../')
+	if subprocess.call('ndk-build -j8', shell=True) != 0:
+		return -1
 	subprocess.call('ant debug install', shell=True)
 
 def buildBlackberry():
