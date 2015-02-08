@@ -85,8 +85,8 @@ bool KeyEventProcessor::process(SDL_Event &event){
 }
 
 SpriteView::SpriteView(EventController* controller)
-	: myController(controller),done(false),
-	sprite(LoadSprite("image.bmp", renderer)), vel({0,0}),
+	: myController(controller),
+	sprite(LoadSprite("image.bmp", renderer)), ccol(0), vel({0,0}),
 	font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
 	music(Mix_LoadMUS("music.ogg"))
     {
@@ -98,7 +98,6 @@ SpriteView::SpriteView(EventController* controller)
     }
 
 SpriteView::~SpriteView(){
-    for(auto &a : myEvents) delete a;
     TTF_CloseFont(font);
     font = nullptr;
 	SDL_DestroyTexture(sprite.texture);
@@ -107,15 +106,16 @@ SpriteView::~SpriteView(){
 }
 
 bool SpriteView::activate(){
-    myEvents.push_back(new KeyEventProcessor(myController, this));
-    myEvents.push_back(new FMotionEventProcessor(myController, this));
-    myEvents.push_back(new InputEventProcessor(myController, this));
-    myEvents.push_back(new EditEventProcessor(myController, this));
-    myEvents.push_back(new MGestureEventProcessor(myController, this));
-    myEvents.push_back(new QuitEventProcessor(myController, this));
-    myEvents.push_back(new FDownEventProcesor(myController, this));
+    myEvents.push_back(std::make_shared<KeyEventProcessor>(myController, this));
+    myEvents.push_back(std::make_shared<FMotionEventProcessor>(myController, this));
+    myEvents.push_back(std::make_shared<InputEventProcessor>(myController, this));
+    myEvents.push_back(std::make_shared<EditEventProcessor>(myController, this));
+    myEvents.push_back(std::make_shared<MGestureEventProcessor>(myController, this));
+    myEvents.push_back(std::make_shared<QuitEventProcessor>(myController, this));
+    myEvents.push_back(std::make_shared<FDownEventProcesor>(myController, this));
     SDL_JoystickEventState(SDL_QUERY);
     Mix_PlayMusic(music, -1);
+    activated = true;
     return true;
 }
 
@@ -145,10 +145,6 @@ bool SpriteView::updateWorld(){
 }
 
 bool SpriteView::drawWorld(){
-    /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, colors[ccol], colors[ccol], colors[ccol], 0xFF);
-    SDL_RenderClear(renderer);
-
     SDL_Color color = {0xFF, 0xFF, 0xFF, 0xFF};
     if(font){
         SDL_Surface *surf = TTF_RenderText_Blended(font, (text + composition).c_str(), color);
@@ -169,9 +165,7 @@ bool SpriteView::drawWorld(){
     myInput.draw();
     sprite.draw();
 
-    /*Update the screen!*/
-    SDL_RenderPresent(renderer);
-
+SDL_SetRenderDrawColor(renderer, colors[ccol], colors[ccol], colors[ccol], 0xFF);
     return !done;
 }
 

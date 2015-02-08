@@ -39,7 +39,6 @@ public:
 class SpriteView : public View {
 public:
 	EventController* myController;
-	bool done;
 	Sprite sprite;
 	int w, h, ccol, cdir, vel[2], colors[8];
 	float angle, scale;

@@ -105,7 +105,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
@@ -132,14 +132,15 @@ int main(int argc, char *argv[])
 
     views.push_back(make_shared<SpriteView>(&viewController));
 
-	fbLogin();
-	if(!initGPS()) gpLogin;
+//	fbLogin();
+//	if(!initGPS()) gpLogin();
 
 	int millis = SDL_GetTicks();
 	while(!views.empty()){
         if(!views[0]->activated) views[0]->activate();
         bool cont = true;
         while(cont){
+            SDL_RenderClear(renderer);
             millis = SDL_GetTicks();
             while(SDL_PollEvent(&event)){
                 if(!overlays.empty()){
@@ -160,6 +161,7 @@ int main(int argc, char *argv[])
                     overlays.pop_front();
                 }
             }
+            SDL_RenderPresent(renderer);
         }
         if(views[0]->activated){
             views[0]->deactivate();

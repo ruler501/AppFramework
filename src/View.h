@@ -1,3 +1,6 @@
+#ifndef _VIEW_H_
+#define _VIEW_H_
+
 #include <vector>
 #include "EventProcessor.h"
 
@@ -8,10 +11,12 @@
  */
 class View {
 protected:
-    std::vector<EventProcessor*> myEvents;
+    std::vector<std::shared_ptr<EventProcessor> > myEvents;
 
 public:
-    bool activated;
+    bool activated, done;
+
+    View(): activated(false), done(false) {}
 
     //! Sets the world state to the start position and registers event processors
     virtual bool activate() = 0;
@@ -25,5 +30,6 @@ public:
 
 
 class Overlay : public View{
-
 };
+
+#endif

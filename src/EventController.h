@@ -1,5 +1,5 @@
 #ifndef _EVENTCONTROLLER_H_
-#define _EVENTCONTROLLER_H_ 1
+#define _EVENTCONTROLLER_H_
 
 #include <map>
 #include <vector>

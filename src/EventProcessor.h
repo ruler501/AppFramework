@@ -1,5 +1,5 @@
 #ifndef _EVENTPROCESSOR_H_
-#define _EVENTPROCESSOR_H_ 1
+#define _EVENTPROCESSOR_H_
 
 #include <vector>
 #include <string>
