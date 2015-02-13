@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,6 +46,7 @@ import android.content.pm.*;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.*;
+import android.bluetooth.*;
 
 /*
  * A sample wrapper class that just calls SDLActivity
@@ -61,6 +64,8 @@ public class MyGame extends SDLActivity {
 	private static final String ICPACKAGENAME = "com.mygame.game";
 	private static final String LOGPREFIX = ICPACKAGENAME;
 	private SimpleFacebook mSimpleFacebook = null;
+	private BluetoothDevice ourBTDevice = null;
+	private BluetoothSocket ourBTSocket = null;
 
 	// Override getContext so we can return this activity context
     public static MyGame GetActivity() {
@@ -78,7 +83,7 @@ public class MyGame extends SDLActivity {
         mBillingHelper = new IabHelper(this, base64EncodedPublicKey);
         mBillingHelper.enableDebugLogging(true, LOGPREFIX);
         mBillingHelper.startSetup(mIabFinishedHelper);
-		
+
 		Permission[] permissions = new Permission[] {
 			Permission.USER_FRIENDS,
 			Permission.EMAIL
@@ -349,5 +354,79 @@ public class MyGame extends SDLActivity {
 		};
 
 		mSimpleFacebook.login(onLoginListener);
+	}
+
+	public Boolean enableBluetooth()
+	{
+	    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+	    if(bluetoothAdapter == null) return false;
+        boolean isEnabled = bluetoothAdapter.isEnabled();
+        if (!isEnabled) {
+            return bluetoothAdapter.enable();
+        }
+        return false;
+	}
+
+    //! \todo Implement discovery and the likes
+	public Boolean findBluetoothDevice(String name)
+	{
+	    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+	    if(bluetoothAdapter == null) return false;
+        Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+        if(pairedDevices.size() > 0){
+            for (BluetoothDevice device : pairedDevices){
+                if(device.getName() == name){
+                    ourBTDevice = device;
+                    return true;
+                }
+            }
+        }
+        return false;
+	}
+
+    //! \todo Have this done in a seperate thread
+	public Boolean connectBluetoothDevice(String uuid){
+        if(ourBTDevice == null) return false;
+        try{
+            ourBTSocket = ourBTDevice.createRfcommSocketToServiceRecord(UUID.fromString(uuid));
+        } catch(IOException e){
+            return false;
+        }
+        if(ourBTSocket == null) return false;
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null) return false;
+        if(bluetoothAdapter.isDiscovering()) bluetoothAdapter.cancelDiscovery();
+        try{
+            ourBTSocket.connect();
+        }
+        catch(Throwable t){
+            return false;
+        }
+        return true;
+	}
+
+	native public void receiveBytes(byte[] bytes, int length, int pointer);
+
+    //! \todo Thread out the work
+	public Boolean receiveBluetooth(int readsize, final int pointer){
+        if(ourBTSocket == null) return false;
+        byte[] bytes = new byte[readsize];
+        try{
+            ourBTSocket.getInputStream().read(bytes);
+        } catch(IOException e){
+            return false;
+        }
+        receiveBytes(bytes, bytes.length, pointer);
+        return true;
+	}
+
+	public Boolean sendBluetooth(byte[] bytes, final int pointer){
+        if(ourBTSocket == null) return false;
+        try{
+            ourBTSocket.getOutputStream().write(bytes);
+        } catch(IOException e){
+            return false;
+        }
+        return true;
 	}
 }
