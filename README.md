@@ -20,3 +20,6 @@ Written to help new developers to mobile platforms to quickly create new apps.
 
 ##HTTP
 - Basic HTTP library implemented, platform agnostic to simplify using CURL
+
+##Location
+- Implemented for Android, untested
