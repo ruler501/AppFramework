@@ -65,11 +65,11 @@ struct byteBuffer{
 
 std::vector<uint8_t> XBluetooth::receiveBytes(size_t amount){
 	if(!connected) return {};
-	
+
 	byteBuffer* tBuffer = new byteBuffer;
 	tBuffer->waiting = SDL_CreateCond();
 	SDL_mutex* tMutex = SDL_CreateMutex();
-	
+
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
     std::string mClassPath = "com/myapp/game/MyGame";
 
@@ -82,14 +82,14 @@ std::vector<uint8_t> XBluetooth::receiveBytes(size_t amount){
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "receiveBluetooth", "(I)Z");
 
     jboolean result = aEnv->CallBooleanMethod(aActivity, aJavaMethodID, amount);
-	
+
 	if(result != JNI_TRUE) return std::vector<uint8_t>{};
-	
+
 	SDL_CondWait(tBuffer->waiting, tMutex);
 	return tBuffer->result;
 }
 
-bool XBluetooth::sendBluetooth(std::vector<uint8_t> bytes){
+bool XBluetooth::sendBytes(std::vector<uint8_t> bytes){
 	JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
     std::string mClassPath = "com/myapp/game/MyGame";
 
@@ -98,14 +98,14 @@ bool XBluetooth::sendBluetooth(std::vector<uint8_t> bytes){
     std::string pFuncType = "()Lcom/myapp/game/MyGame;";
     jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
-    
+
     jbyteArray tBytes = aEnv->NewByteArray(bytes.size());
-    pEnv->SetByteArrayRegion(tBytes, 0, bytes.size(), bytes.data());
+    aEnv->SetByteArrayRegion(tBytes, 0, bytes.size(), (jbyte*)bytes.data());
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "receiveBluetooth", "([B)Z");
 
     jboolean result = aEnv->CallBooleanMethod(aActivity, aJavaMethodID, tBytes);
-    
+
     return result == JNI_TRUE;
 }
 

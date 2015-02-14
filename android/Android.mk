@@ -31,9 +31,13 @@ LOCAL_SRC_FILES += Billing/XF_Billing.cpp
 
 LOCAL_SRC_FILES += Billing/XF_Billing_Android.cpp
 
-LOCAL_SRC_FILES += Facebook/CallbacksAndroid.cpp
+LOCAL_SRC_FILES += SocialNetworks/CallbacksAndroid.cpp
 
-LOCAL_SRC_FILES += GooglePlus/GooglePlus.cpp
+LOCAL_SRC_FILES += SocialNetworks/XFacebookAndroid.cpp
+
+LOCAL_SRC_FILES += SocialNetworks/XGooglePlus.cpp
+
+LOCAL_SRC_FILES += SocialNetworks/XGooglePlusAndroid.cpp
 
 LOCAL_SRC_FILES += bluetooth/BluetoothAndroid.cpp
 

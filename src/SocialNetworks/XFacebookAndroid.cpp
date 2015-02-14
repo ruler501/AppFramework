@@ -1,11 +1,7 @@
-#include "Facebook.h"
-
-bool fbLoaded = false;
-
-#ifdef __ANDROID_API__
+#include "XFacebook.h"
 #include <jni.h>
 
-bool checkFbLogin(){
+XFacebook::XFacebook(){
     goodCall* tCall = new goodCall;
 
     tCall->waiting = SDL_CreateCond();
@@ -26,10 +22,10 @@ bool checkFbLogin(){
 
     if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    return tCall->success;
+    loggedIn = tCall->success;
 }
 
-bool fbLogin(){
+bool XFacebook::login(){
     goodCall* tCall = new goodCall;
 
     tCall->waiting = SDL_CreateCond();
@@ -50,11 +46,11 @@ bool fbLogin(){
 
     if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    return tCall->success;
+    return (loggedIn = tCall->success);
 }
 
-std::vector<std::string> getFbFriends(){
-    if(!fbLoaded) fbLogin();
+std::vector<std::string> XFacebook::getFriendIDs(){
+    if(!loggedIn) login();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
@@ -78,8 +74,8 @@ std::vector<std::string> getFbFriends(){
     return fp->friendIDs;
 }
 
-std::string fbGetId(){
-    if(!fbLoaded) fbLogin();
+std::string XFacebook::getProfileID(){
+    if(!loggedIn) login();
     sReturn* tRet = new sReturn;
     tRet->waiting = SDL_CreateCond();
 
@@ -103,12 +99,12 @@ std::string fbGetId(){
     return tRet->result;
 }
 
-std::string fbGetProfileImage(){
-    return std::string("https://graph.facebook.com/") + fbGetId() + "/picture?type=large";
+std::string XFacebook::getProfileImage(){
+    return std::string("https://graph.facebook.com/") + getProfileID() + "/picture?type=large";
 }
 
-std::string fbGetProfileName(){
-    if(!fbLoaded) fbLogin();
+std::string XFacebook::getProfileName(){
+    if(!loggedIn) login();
     sReturn* tRet = new sReturn;
     tRet->waiting = SDL_CreateCond();
 
@@ -131,5 +127,3 @@ std::string fbGetProfileName(){
 
     return tRet->result;
 }
-
-#endif

@@ -12,8 +12,9 @@
 
 #include "main.h"
 #include "example.h"
-#include "Facebook/Facebook.h"
-#include "GooglePlus/GooglePlus.h"
+#include "SocialNetworks/XFacebook.h"
+#include "SocialNetworks/XGooglePlus.h"
+#include "bluetooth/Bluetooth.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -80,26 +81,6 @@ std::string to_string(T value)
         return to_string(rand());
     }
 #endif //__ANDROID_API__
-
-bool fbLogin(){
-    goodCall* tCall = new goodCall;
-
-    tCall->waiting = SDL_CreateCond();
-    SDL_mutex* tMutex = SDL_CreateMutex();
-
-    JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
-
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
-
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
-    jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
-
-    jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "findFriendIDs", "(I)V");
-
-    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tCall);
-}
 
 using namespace std;
 
