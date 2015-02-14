@@ -15,6 +15,7 @@
 #include "SocialNetworks/XFacebook.h"
 #include "SocialNetworks/XGooglePlus.h"
 #include "Bluetooth/XBluetooth.h"
+#include "HTTP/XHTTP.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;

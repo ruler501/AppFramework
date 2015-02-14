@@ -17,3 +17,6 @@ Written to help new developers to mobile platforms to quickly create new apps.
 ##In-App Billing
 - Implemented for Android and iOS
 - Big thanks to Pallav Nawani for providing the code that handles it
+
+##HTTP
+- Basic HTTP library implemented, platform agnostic to simplify using CURL
