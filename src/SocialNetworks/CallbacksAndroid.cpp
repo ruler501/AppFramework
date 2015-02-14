@@ -15,8 +15,8 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
 
 extern "C" {
 JNIEXPORT void JNICALL Java_com_myapp_game_MyGame_returnFriends(JNIEnv *pEnv, jobject pObj, int pointer, jstring resultStr){
-    friends* tFriends = (friends*)pointer;
-    tFriends->completed = true;
+    callReturn<std::vector<std::string> >* tCall = (callReturn<std::vector<std::string> >*)pointer;
+    tCall->completed = true;
     std::vector<std::string> ids;
     const char *rStr = pEnv->GetStringUTFChars(resultStr, JNI_FALSE);
     split(rStr, ',', ids);
@@ -25,22 +25,22 @@ JNIEXPORT void JNICALL Java_com_myapp_game_MyGame_returnFriends(JNIEnv *pEnv, jo
         std::istringstream(s) >> t;
         tFriends->friendIDs.push_back(t);
     }*/
-    tFriends->friendIDs = ids;
-    SDL_CondSignal(tFriends->waiting);
+    tCall->result = ids;
+    SDL_CondSignal(tCall->waiting);
 }
 
 JNIEXPORT void JNICALL Java_com_myapp_game_MyGame_signalDone(JNIEnv *pEnv, jobject pObj, int pointer, jboolean result){
-    goodCall* tCall = (goodCall*)pointer;
+    callReturn<bool>* tCall = (callReturn<bool>*)pointer;
     tCall->completed = true;
-    tCall->success = result == JNI_TRUE;
+    tCall->result = result == JNI_TRUE;
     SDL_CondSignal(tCall->waiting);
 }
 
 JNIEXPORT void JNICALL Java_com_myapp_game_MyGame_returnString(JNIEnv *pEnv, jobject pObj, int pointer, jstring resultStr){
-    sReturn* tRet = (sReturn*)pointer;
-    tRet->completed = true;
+    callReturn<std::string>* tCall = (callReturn<std::string>*)pointer;
+    tCall->completed = true;
     const char *rStr = pEnv->GetStringUTFChars(resultStr, JNI_FALSE);
-    tRet->result = rStr;
-    SDL_CondSignal(tRet->waiting);
+    tCall->result = rStr;
+    SDL_CondSignal(tCall->waiting);
 }
 }

@@ -1,10 +1,11 @@
+#include "main.h"
 #include "XFacebook.h"
 #include <jni.h>
 
 XFacebook::XFacebook(){
-    goodCall* tCall = new goodCall;
+    callReturn<bool>* tCall = new callReturn<bool>;
 
-    tCall->waiting = SDL_CreateCond();
+    tCall->result = false;
     SDL_mutex* tMutex = SDL_CreateMutex();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
@@ -22,13 +23,13 @@ XFacebook::XFacebook(){
 
     if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    loggedIn = tCall->success;
+    loggedIn = tCall->result;
 }
 
 bool XFacebook::login(){
-    goodCall* tCall = new goodCall;
+    callReturn<bool>* tCall = new callReturn<bool>;
 
-    tCall->waiting = SDL_CreateCond();
+    tCall->result = false;
     SDL_mutex* tMutex = SDL_CreateMutex();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
@@ -46,7 +47,7 @@ bool XFacebook::login(){
 
     if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    return (loggedIn = tCall->success);
+    return (loggedIn = tCall->result);
 }
 
 std::vector<std::string> XFacebook::getFriendIDs(){
@@ -61,23 +62,21 @@ std::vector<std::string> XFacebook::getFriendIDs(){
     jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
-    friends* fp = new friends;
-    fp->waiting = SDL_CreateCond();
+    callReturn<std::vector<std::string> >* tCall = new callReturn<std::vector<std::string> >;
     SDL_mutex* tMutex = SDL_CreateMutex();
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "returnFriendIDs", "(I)V");
 
-    aEnv->CallVoidMethod(aActivity, aJavaMethodID, fp);
+    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tCall);
 
-    if(!fp->completed) SDL_CondWait(fp->waiting, tMutex);
+    if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    return fp->friendIDs;
+    return tCall->result;
 }
 
 std::string XFacebook::getProfileID(){
     if(!loggedIn) login();
-    sReturn* tRet = new sReturn;
-    tRet->waiting = SDL_CreateCond();
+    callReturn<std::string>* tCall = new callReturn<std::string>;
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
@@ -92,11 +91,11 @@ std::string XFacebook::getProfileID(){
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "returnFbID", "(I)V");
 
-    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tRet);
+    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tCall);
 
-    if(!tRet->completed) SDL_CondWait(tRet->waiting, tMutex);
+    if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    return tRet->result;
+    return tCall->result;
 }
 
 std::string XFacebook::getProfileImage(){
@@ -105,8 +104,7 @@ std::string XFacebook::getProfileImage(){
 
 std::string XFacebook::getProfileName(){
     if(!loggedIn) login();
-    sReturn* tRet = new sReturn;
-    tRet->waiting = SDL_CreateCond();
+    callReturn<std::string>* tCall = new callReturn<std::string>;
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
@@ -121,9 +119,9 @@ std::string XFacebook::getProfileName(){
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "returnName", "(I)V");
 
-    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tRet);
+    aEnv->CallVoidMethod(aActivity, aJavaMethodID, tCall);
 
-    if(!tRet->completed) SDL_CondWait(tRet->waiting, tMutex);
+    if(!tCall->completed) SDL_CondWait(tCall->waiting, tMutex);
 
-    return tRet->result;
+    return tCall->result;
 }

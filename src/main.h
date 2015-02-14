@@ -6,6 +6,7 @@
 #ifdef __ANDROID_API__
     #include <jni.h>
 #endif
+#include "SDL.h"
 
 #include "EventController.h"
 #include "EventProcessor.h"
@@ -23,6 +24,15 @@ extern const char* pref_path;
 extern EventController viewController;
 extern EventController overlayController;
 extern std::string uid;
+
+template <class T>
+struct callReturn{
+    SDL_cond* waiting;
+    bool completed;
+    T result;
+
+    callReturn() : waiting(SDL_CreateCond()), completed(false) {}
+};
 
 SDL_Texture* loadImage(const char* path);
 bool enclosedPoint(SDL_Point &point, SDL_Rect &rect);

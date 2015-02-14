@@ -1,3 +1,4 @@
+#include "main.h"
 #include "XBluetooth.h"
 #include <jni.h>
 
@@ -58,16 +59,10 @@ bool XBluetooth::findAndConnect(std::string name, std::string uuid="00001101-000
     return findDevice(name) && connectDevice(uuid);
 }
 
-struct byteBuffer{
-	SDL_cond* waiting;
-	std::vector<uint8_t> result;
-};
-
 std::vector<uint8_t> XBluetooth::receiveBytes(size_t amount){
 	if(!connected) return {};
 
-	byteBuffer* tBuffer = new byteBuffer;
-	tBuffer->waiting = SDL_CreateCond();
+	callReturn<std::vector<uint8_t> >* tBuffer = new callReturn<std::vector<uint8_t> >;
 	SDL_mutex* tMutex = SDL_CreateMutex();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
@@ -114,7 +109,7 @@ extern "C" {
 JNIEXPORT void JNICALL Java_com_myapp_game_MyGame_receiveBytes(JNIEnv *pEnv, jobject pObj, jbyteArray bytes, int length, int pointer){
 	jboolean isCopy;
 	uint8_t* b = (uint8_t*)pEnv->GetByteArrayElements(bytes, &isCopy);
-	byteBuffer* tBuffer = (byteBuffer*)pointer;
+	callReturn<std::vector<uint8_t> >* tBuffer = (callReturn<std::vector<uint8_t> >*)pointer;
 	tBuffer->result.assign(b, b+length);
 	SDL_CondSignal(tBuffer->waiting);
 }

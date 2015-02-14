@@ -429,4 +429,27 @@ public class MyGame extends SDLActivity {
         }
         return true;
 	}
+
+	native public void retCoords(double lat, double lon);
+
+//Credits to http://stackoverflow.com/a/16498506/3300171
+    public Boolean getLocation()
+    {
+        //Get the location manager
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        String bestProvider = locationManager.getBestProvider(criteria, false);
+        Location location = locationManager.getLastKnownLocation(bestProvider);
+        Double lat,lon;
+        try {
+            lat = location.getLatitude ();
+            lon = location.getLongitude ();
+            retCoords(lat,lon);
+            return true;
+        }
+        catch (NullPointerException e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
