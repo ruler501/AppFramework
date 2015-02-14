@@ -3,6 +3,8 @@
 #include <jni.h>
 
 XFacebook::XFacebook(){
+    icon = loadImage("fb.png");
+
     callReturn<bool>* tCall = new callReturn<bool>;
 
     tCall->result = false;

@@ -1,0 +1,11 @@
+Here is how the Android Code Works:
+1. Include google's  In-App billing sdk in your code.
+2. Include IInAppBillingService.aidl in your project from YOUR google sdk. My version could differ from yours.
+3. PahelikaSecretLegendsFree.java is the main game activity. The package is "com.yourgame.droid.pahelikasecretlegends.hd.free2" Rename as per your Game and adjust the package path in eclipse.
+4. Replace "<YOUR GOOGLE_PLAY_LICENSE_KEY>" with your google play license key
+5. The InApp Billing helper code is located in src\com\ironcode\droid\util. Adjust the path as per your requirement and adjust the import path in your main activity.
+6. Adjust application manifest to add billing permissions and Activity name etc.
+7. The way this works is that PahelikaSecretLegendsFree is the main activity that derives from SDLActivity.
+8. The C++ code calls into the java code in PahelikaSecretLegendsFree.java via JNI. The java code uses the helper classes to do the actual work.
+9. You need to provide interface to c++ callback functions that will be called by the java code to provide purchase results. See the file ph_os_android_callbacks.h and ph_os_android_callbacks.cpp for an example.
+
