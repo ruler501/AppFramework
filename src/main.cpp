@@ -14,7 +14,7 @@
 #include "example.h"
 #include "SocialNetworks/XFacebook.h"
 #include "SocialNetworks/XGooglePlus.h"
-#include "bluetooth/Bluetooth.h"
+#include "Bluetooth/XBluetooth.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;

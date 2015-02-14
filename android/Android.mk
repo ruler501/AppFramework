@@ -39,7 +39,7 @@ LOCAL_SRC_FILES += SocialNetworks/XGooglePlus.cpp
 
 LOCAL_SRC_FILES += SocialNetworks/XGooglePlusAndroid.cpp
 
-LOCAL_SRC_FILES += bluetooth/BluetoothAndroid.cpp
+LOCAL_SRC_FILES += Bluetooth/XBluetoothAndroid.cpp
 
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_ttf SDL2_net gpg-1
 
