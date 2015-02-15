@@ -61,10 +61,22 @@
 		<Unit filename="src/Billing/XF_Billing_Android.h">
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/Billing/XF_Billing_Mac.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Billing/XF_Billing_ios.h">
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src/Billing/ph_os_android_callbacks.cpp">
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/Billing/ph_os_android_callbacks.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Bluetooth/XBluetooth.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/Bluetooth/XBluetoothAndroid.cpp">
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/EventController.cpp">
@@ -76,16 +88,34 @@
 		<Unit filename="src/EventProcessor.h">
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/Facebook/CallbacksAndroid.cpp">
+		<Unit filename="src/HTTP/XHTTP.h">
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/Facebook/Facebook.h">
+		<Unit filename="src/Location/XLocation.h">
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/GooglePlus/GooglePlus.cpp">
+		<Unit filename="src/Location/XLocationAndroid.cpp">
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/GooglePlus/GooglePlus.h">
+		<Unit filename="src/SocialNetworks/CallbacksAndroid.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/SocialNetworks/XFacebook.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/SocialNetworks/XFacebookAndroid.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/SocialNetworks/XGooglePlus.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/SocialNetworks/XGooglePlus.h">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/SocialNetworks/XGooglePlusAndroid.cpp">
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/SocialNetworks/XSocialNetwork.h">
 			<Option target="Release" />
 		</Unit>
 		<Unit filename="src/View.h">

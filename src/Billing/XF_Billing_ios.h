@@ -20,16 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-/*! 
+/*!
 *
 * \file XF_Billing_ios.h
 * 	No description yet
-* 	
-* 	
+*
+*
 *  Fri Nov 15 16:04:56 IST 2013
 *  \author Pallav Nawani
 * Copyright IronCode Gaming Pvt. Ltd. (c) 2013
-* 
+*
 */
 
 

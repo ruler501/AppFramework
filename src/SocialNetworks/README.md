@@ -29,4 +29,4 @@ Java call to initialize and then C++ calls using the google play games library
 Not implemented as I don't have a device to test on.
 
 #### Google Plus
-Needs an Objective-C call to initialize then the C++ code should work for it too
+Should work, completely untested though. I don't even know if it compiles.
