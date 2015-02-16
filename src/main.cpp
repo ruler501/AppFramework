@@ -9,6 +9,7 @@
 #include "SDL.h"
 #include "SDL_ttf.h"
 #include "SDL_mixer.h"
+#include "SDL_image.h"
 
 #include "main.h"
 #include "example.h"
@@ -16,6 +17,8 @@
 #include "SocialNetworks/XGooglePlus.h"
 #include "Bluetooth/XBluetooth.h"
 #include "HTTP/XHTTP.h"
+#include "Location/XLocation.h"
+#include "Notifications/XNotification.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -29,6 +32,17 @@ const char* pref_path;
 EventController viewController;
 EventController overlayController;
 std::string uid;
+
+SDL_Texture* loadImage(const char* path){
+    SDL_Surface* tSurf = IMG_Load(path);
+
+    if(!tSurf) return nullptr;
+
+    SDL_Texture* tText = SDL_CreateTextureFromSurface(renderer, tSurf);
+    SDL_FreeSurface(tSurf);
+
+    return tText;
+}
 
 bool enclosedPoint(SDL_Point &point, SDL_Rect &rect){
 	bool ret = true;
@@ -121,6 +135,7 @@ int main(int argc, char *argv[])
 	while(!views.empty()){
         if(!views[0]->activated) views[0]->activate();
         bool cont = true;
+        dispatchNotification("mygame.bmp", "MyGame", "We switched our view");
         while(cont){
             SDL_RenderClear(renderer);
             millis = SDL_GetTicks();

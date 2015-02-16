@@ -4,7 +4,7 @@ XGooglePlus::XGooglePlus()
 : authCond(SDL_CreateCond()), authMutex(SDL_CreateMutex()), isLoggedIn(false),
   isFinished(false)
 {
-
+    icon = loadImage("gp.png");
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
     JavaVM* mJVM;

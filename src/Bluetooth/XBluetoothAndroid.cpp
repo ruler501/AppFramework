@@ -74,9 +74,9 @@ std::vector<uint8_t> XBluetooth::receiveBytes(size_t amount){
     jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
-    jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "receiveBluetooth", "(I)Z");
+    jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "receiveBluetooth", "(II)Z");
 
-    jboolean result = aEnv->CallBooleanMethod(aActivity, aJavaMethodID, amount);
+    jboolean result = aEnv->CallBooleanMethod(aActivity, aJavaMethodID, amount, tBuffer);
 
 	if(result != JNI_TRUE) return std::vector<uint8_t>{};
 

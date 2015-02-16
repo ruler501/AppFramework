@@ -22,4 +22,7 @@ Written to help new developers to mobile platforms to quickly create new apps.
 - Basic HTTP library implemented, platform agnostic to simplify using CURL
 
 ##Location
-- Implemented for Android, untested
+- Implemented for Android, untested, single function pulls out latitude and longitude as doubles
+
+##Notification
+- Implemented for Android, single function, just loads up the current app again
