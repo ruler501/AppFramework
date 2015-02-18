@@ -38,10 +38,7 @@
 
 #include "SDL.h"
 #include "XF_Billing_Android.h"
-
-//#include "XAppBase.h"
-//#include "misc/XF_Log.h"
-//#include "os/xf_os_android_jni.h"
+#include "main.h"
 
 
 namespace FrameworkX
@@ -98,8 +95,7 @@ namespace FrameworkX
    void XFBillingManagerAndroid :: Init(XAppBase *pApp, XFPurchaseHandler *pPurchaseHandler)
    {
       XFBillingManager::Init(pApp, pPurchaseHandler);
-      //mClassPath = pApp->mJavaClassPath;
-      mClassPath = "com/myapp/game/MyGame";
+      mClassPath = xClassPath;
       JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
       mActivityClass = (jclass)aEnv->NewGlobalRef(aEnv->FindClass(mClassPath.c_str()));
    }
@@ -123,7 +119,7 @@ namespace FrameworkX
       jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
 
       string pFuncType = "()Lcom/myapp/game/MyGame;";
-      jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myappp/game/MyGame;");
+      jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
       jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
       jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "XFBillingCanPurchase", "()Z");

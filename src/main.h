@@ -24,6 +24,7 @@ extern const char* pref_path;
 extern EventController viewController;
 extern EventController overlayController;
 extern std::string uid;
+extern std::string xClassPath;
 
 template <class T>
 struct callReturn{

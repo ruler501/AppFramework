@@ -14,12 +14,10 @@ XGooglePlus::XGooglePlus()
     gpg::AndroidPlatformConfiguration platform_configuration;
 
     aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     platform_configuration.SetActivity(aActivity);

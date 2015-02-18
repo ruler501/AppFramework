@@ -47,6 +47,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.net.*;
 import android.bluetooth.*;
+import android.location.*;
+import android.support.v4.app.NotificationCompat;
+import android.app.NotificationManager;
 
 /*
  * A sample wrapper class that just calls SDLActivity
@@ -451,5 +454,40 @@ public class MyGame extends SDLActivity {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean notify(String iconName, String title, String text, int id){
+        int resID = getResources().getIdentifier(iconName , "drawable", getPackageName());
+        if(resID == 0) return false;
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+            .setSmallIcon(resID)
+            .setContentTitle(title)
+            .setContentText(text);
+
+        Intent resultIntent = new Intent(this, MyGame.class);
+        // Because clicking the notification opens a new ("special") activity, there's
+        // no need to create an artificial back stack.
+        PendingIntent resultPendingIntent =
+            PendingIntent.getActivity(
+            this,
+            0,
+            resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // Builds the notification and issues it.
+        mNotifyMgr.notify(id, mBuilder.build());
+
+        return true;
+    }
+
+    public void cancelNotify(int id){
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.cancel(id);
     }
 }

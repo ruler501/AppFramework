@@ -11,12 +11,10 @@ XFacebook::XFacebook(){
     SDL_mutex* tMutex = SDL_CreateMutex();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "checkFbLogin", "(I)V");
@@ -35,12 +33,10 @@ bool XFacebook::login(){
     SDL_mutex* tMutex = SDL_CreateMutex();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "findFriendIDs", "(I)V");
@@ -57,11 +53,9 @@ std::vector<std::string> XFacebook::getFriendIDs(){
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
-    std::string mClassPath = "com/myapp/game/MyGame";
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
-
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     callReturn<std::vector<std::string> >* tCall = new callReturn<std::vector<std::string> >;
@@ -82,11 +76,9 @@ std::string XFacebook::getProfileID(){
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
-    std::string mClassPath = "com/myapp/game/MyGame";
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
-
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     SDL_mutex* tMutex = SDL_CreateMutex();
@@ -110,11 +102,9 @@ std::string XFacebook::getProfileName(){
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
 
-    std::string mClassPath = "com/myapp/game/MyGame";
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
-
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     SDL_mutex* tMutex = SDL_CreateMutex();

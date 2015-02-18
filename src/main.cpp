@@ -32,6 +32,7 @@ const char* pref_path;
 EventController viewController;
 EventController overlayController;
 std::string uid;
+std::string xClassPath = "com/myapp/game/MyGame";
 
 SDL_Texture* loadImage(const char* path){
     SDL_Surface* tSurf = IMG_Load(path);
@@ -118,7 +119,7 @@ int main(int argc, char *argv[])
 #ifdef __ANDROID_API__
     pref_path = SDL_AndroidGetInternalStoragePath();
 #else
-    pref_path = SDL_GetPrefPath("fillmyblank", "app");
+    pref_path = SDL_GetPrefPath("myapp", "game");
 #endif
 
     uid = getUID();
@@ -135,7 +136,7 @@ int main(int argc, char *argv[])
 	while(!views.empty()){
         if(!views[0]->activated) views[0]->activate();
         bool cont = true;
-        dispatchNotification("mygame.bmp", "MyGame", "We switched our view");
+        XNotification anotif("mygame.bmp", "MyGame", "We switched our view", true);
         while(cont){
             SDL_RenderClear(renderer);
             millis = SDL_GetTicks();

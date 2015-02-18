@@ -4,12 +4,10 @@
 
 bool XBluetooth::initiate(){
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "enableBluetooth", "()Z");
@@ -22,12 +20,10 @@ bool XBluetooth::initiate(){
 bool XBluetooth::findDevice(std::string name){
     if(!initiated) return false;
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "findBluetoothDevice", "(Ljava/lang/String)Z");
@@ -40,12 +36,10 @@ bool XBluetooth::findDevice(std::string name){
 bool XBluetooth::connectDevice(std::string uuid="00001101-0000-1000-8000-00805F9B34FB"){
     if(!initiated) return false;
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "connectBluetoothDevice", "(Ljava/lang/String)Z");
@@ -66,12 +60,11 @@ std::vector<uint8_t> XBluetooth::receiveBytes(size_t amount){
 	SDL_mutex* tMutex = SDL_CreateMutex();
 
     JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    std::string pFuncType = (std::string("()L")+xClassPath+";").c_str();
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jmethodID aJavaMethodID = aEnv->GetMethodID(aActivityClass, "receiveBluetooth", "(II)Z");
@@ -86,12 +79,10 @@ std::vector<uint8_t> XBluetooth::receiveBytes(size_t amount){
 
 bool XBluetooth::sendBytes(std::vector<uint8_t> bytes){
 	JNIEnv *aEnv = (JNIEnv *)SDL_AndroidGetJNIEnv();
-    std::string mClassPath = "com/myapp/game/MyGame";
 
-    jclass aActivityClass = aEnv->FindClass(mClassPath.c_str());
+    jclass aActivityClass = aEnv->FindClass(xClassPath.c_str());
 
-    std::string pFuncType = "()Lcom/myapp/game/MyGame;";
-    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", "()Lcom/myapp/game/MyGame;");
+    jmethodID aStaticMid = aEnv->GetStaticMethodID(aActivityClass, "GetActivity", (std::string("()L")+xClassPath+";").c_str());
     jobject aActivity =  aEnv->CallStaticObjectMethod(aActivityClass, aStaticMid);
 
     jbyteArray tBytes = aEnv->NewByteArray(bytes.size());
