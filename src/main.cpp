@@ -112,11 +112,9 @@ int main(int argc, char *argv[])
 	TTF_Init();
 
 #ifdef __ANDROID_API__
-        env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
-        activity = static_cast<jobject>(SDL_AndroidGetActivity());
-#endif
+    env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
+    activity = static_cast<jobject>(SDL_AndroidGetActivity());
 
-#ifdef __ANDROID_API__
     pref_path = SDL_AndroidGetInternalStoragePath();
 #else
     pref_path = SDL_GetPrefPath("myapp", "game");
@@ -124,13 +122,7 @@ int main(int argc, char *argv[])
 
     uid = getUID();
 
-    // Main render loop
-    SDL_Event event;
-
     views.push_back(make_shared<SpriteView>(&viewController));
-
-//	fbLogin();
-//	if(!initGPS()) gpLogin();
 
 	int millis = SDL_GetTicks();
 	while(!views.empty()){
@@ -140,6 +132,7 @@ int main(int argc, char *argv[])
         while(cont){
             SDL_RenderClear(renderer);
             millis = SDL_GetTicks();
+            SDL_Event event;
             while(SDL_PollEvent(&event)){
                 if(!overlays.empty()){
                     if(!overlayController.process(event)) viewController.process(event);

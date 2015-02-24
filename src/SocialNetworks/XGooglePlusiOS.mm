@@ -1,19 +1,13 @@
 #include "GooglePlus.h"
 
-@interface XGooglePlus : NSObject
-{}
-
-- ()
-
-- (id) init
+XGooglePlus::XGooglePlus()
 {
-    self = [super init];
     // In viewDidLoad, create a platform configuration and
     // bind the ViewController
     NSString *kClientID = @"YOUR_CLIENT_ID";
     gpg::IosPlatformConfiguration config;
     config.SetClientID(std::string([kClientID UTF8String]));
-    config.SetOptionalViewControllerForPopups(self);
+    config.SetOptionalViewControllerForPopups(this);
 
     auto started_callback = [&](gpg::AuthOperation op){};
     auto finished_callback = [&](gpg::AuthOperation op, gpg::AuthStatus status) {
@@ -36,5 +30,4 @@
     if(!isFinished) SDL_CondWait(authCond, authMutex);
 
     loggedIn = isLoggedIn;
-    return self;
 }
