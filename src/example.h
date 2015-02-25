@@ -3,7 +3,6 @@
 
 #include "main.h"
 #include "SDL_ttf.h"
-#include "SDL_mixer.h"
 
 class GUIElement{
 public:
@@ -45,7 +44,6 @@ public:
 	TTF_Font *font;
 	SDL_Joystick *accelerometer;
 	std::string text, composition;
-	Mix_Music *music;
 	InputBox myInput;
 
 	SpriteView(EventController* controller);

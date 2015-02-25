@@ -3,9 +3,6 @@
 
 #include <deque>
 #include <memory>
-#ifdef __ANDROID_API__
-    #include <jni.h>
-#endif
 #include "SDL.h"
 
 #include "EventController.h"
@@ -16,10 +13,6 @@ extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 extern std::deque<std::shared_ptr<View> > views;
 extern std::deque<std::shared_ptr<Overlay> > overlays;
-#ifdef __ANDROID_API__
-    extern JNIEnv* env;
-    extern jobject activity;
-#endif
 extern const char* pref_path;
 extern EventController viewController;
 extern EventController overlayController;

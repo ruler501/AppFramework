@@ -87,12 +87,11 @@ bool KeyEventProcessor::process(SDL_Event &event){
 SpriteView::SpriteView(EventController* controller)
 	: myController(controller),
 	sprite(LoadSprite("image.bmp", renderer)), ccol(0), vel({0,0}),
-	font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48)),
-	music(Mix_LoadMUS("music.ogg"))
+	font(TTF_OpenFont(std::string("rimouski.ttf").c_str(), 48))
     {
 	    accelerometer = SDL_JoystickOpen(0);
 	    if (accelerometer == NULL) done = true;
-	    SDL_GetWindowSize(window, &w, &h);
+	    SDL_GetRendererOutputSize(renderer, &w, &h);
 	    for(int i=0; i < 8; i++) colors[i] = i*32;
 	    myInput.position = {w/2, h/4, w/4, h/8};
     }
@@ -114,7 +113,6 @@ bool SpriteView::activate(){
     myEvents.push_back(std::make_shared<QuitEventProcessor>(myController, this));
     myEvents.push_back(std::make_shared<FDownEventProcesor>(myController, this));
     SDL_JoystickEventState(SDL_QUERY);
-    Mix_PlayMusic(music, -1);
     activated = true;
     return true;
 }

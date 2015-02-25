@@ -8,26 +8,21 @@
 
 #include "SDL.h"
 #include "SDL_ttf.h"
-#include "SDL_mixer.h"
 #include "SDL_image.h"
 
 #include "main.h"
 #include "example.h"
-#include "SocialNetworks/XFacebook.h"
+//#include "SocialNetworks/XFacebook.h"
 #include "SocialNetworks/XGooglePlus.h"
-#include "Bluetooth/XBluetooth.h"
+//#include "Bluetooth/XBluetooth.h"
 #include "HTTP/XHTTP.h"
-#include "Location/XLocation.h"
-#include "Notifications/XNotification.h"
+//#include "Location/XLocation.h"
+//#include "Notifications/XNotification.h"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
 std::deque<std::shared_ptr<View> > views;
 std::deque<std::shared_ptr<Overlay> > overlays;
-#ifdef __ANDROID_API__
-    JNIEnv* env;
-    jobject activity;
-#endif
 const char* pref_path;
 EventController viewController;
 EventController overlayController;
@@ -61,7 +56,12 @@ std::string to_string(T value)
 }
 
 #ifdef __ANDROID_API__
+#include <jni.h>
+
     std::string getUID(){
+        JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+        jobject activity = (jobject)SDL_AndroidGetActivity();
+
         jclass  activityClass = env->GetObjectClass(activity);
 
         jmethodID  mid_getContentResolver =env->GetMethodID(activityClass,"getContentResolver","()Landroid/content/ContentResolver;");
@@ -102,19 +102,16 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_TIMER | SDL_INIT_JOYSTICK) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
-    if(SDL_CreateWindowAndRenderer(0, 0, 0, &window, &renderer) < 0)
+    if(SDL_CreateWindowAndRenderer(0, 0, SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer) < 0)
         exit(2);
 
 	TTF_Init();
 
 #ifdef __ANDROID_API__
-    env = static_cast<JNIEnv*>(SDL_AndroidGetJNIEnv());
-    activity = static_cast<jobject>(SDL_AndroidGetActivity());
-
     pref_path = SDL_AndroidGetInternalStoragePath();
 #else
     pref_path = SDL_GetPrefPath("myapp", "game");
@@ -128,7 +125,6 @@ int main(int argc, char *argv[])
 	while(!views.empty()){
         if(!views[0]->activated) views[0]->activate();
         bool cont = true;
-        XNotification anotif("mygame.bmp", "MyGame", "We switched our view", true);
         while(cont){
             SDL_RenderClear(renderer);
             millis = SDL_GetTicks();
