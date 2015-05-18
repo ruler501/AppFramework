@@ -7,7 +7,6 @@ XGooglePlus::XGooglePlus()
     NSString *kClientID = @"YOUR_CLIENT_ID";
     gpg::IosPlatformConfiguration config;
     config.SetClientID(std::string([kClientID UTF8String]));
-    config.SetOptionalViewControllerForPopups(this);
 
     auto started_callback = [&](gpg::AuthOperation op){};
     auto finished_callback = [&](gpg::AuthOperation op, gpg::AuthStatus status) {
